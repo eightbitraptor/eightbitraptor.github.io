@@ -8,12 +8,28 @@
   </url>
   
   <url>
+    <loc>https://www.eightbitraptor.com/post/working-with-headless-virtualbox-machines/</loc>
+    <lastmod>2016-07-08T09:30:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://www.eightbitraptor.com/post/emacs-startup-file-loading/</loc>
+    <lastmod>2014-07-21T09:30:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://www.eightbitraptor.com/about/</loc>
   </url>
   
   <url>
     <loc>https://www.eightbitraptor.com/tags/eightbitraptor/</loc>
     <lastmod>2018-12-17T19:30:22+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.eightbitraptor.com/tags/emacs/</loc>
+    <lastmod>2014-07-21T09:30:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -42,8 +58,26 @@
   </url>
   
   <url>
+    <loc>https://www.eightbitraptor.com/tags/programming/</loc>
+    <lastmod>2014-07-21T09:30:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://www.eightbitraptor.com/tags/</loc>
     <lastmod>2018-12-17T19:30:22+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.eightbitraptor.com/tags/tools/</loc>
+    <lastmod>2016-07-08T09:30:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.eightbitraptor.com/tags/virtualisation/</loc>
+    <lastmod>2016-07-08T09:30:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   

@@ -23,5 +23,25 @@ decide that I really wasn&amp;rsquo;t a fan of the name and so in January 2010 I
 registered &lt;code&gt;eightbitraptor.com&lt;/code&gt; where I&amp;rsquo;ve been ever since.&lt;/p&gt;</description>
     </item>
     
+    <item>
+      <title>Working with headless VirtualBox VM&#39;s</title>
+      <link>https://www.eightbitraptor.com/post/working-with-headless-virtualbox-machines/</link>
+      <pubDate>Fri, 08 Jul 2016 09:30:00 +0000</pubDate>
+      
+      <guid>https://www.eightbitraptor.com/post/working-with-headless-virtualbox-machines/</guid>
+      <description>I spend a lot of time using both OSX and Linux. Personally I tend to prefer using Linux, however my work have provided me with a MacBook Pro and in order to make working with my colleagues as pain free as possible, I use OSX on it.
+I still like to do a lot of work that relies on being on Linux however, and there are a bunch of ways to acheive this.</description>
+    </item>
+    
+    <item>
+      <title>The Emacs startup process: Init files</title>
+      <link>https://www.eightbitraptor.com/post/emacs-startup-file-loading/</link>
+      <pubDate>Mon, 21 Jul 2014 09:30:00 +0000</pubDate>
+      
+      <guid>https://www.eightbitraptor.com/post/emacs-startup-file-loading/</guid>
+      <description>I started thinking about this when I arranged a short remote pairing session to help a friend work through some pain he was having with his Emacs configuration. The session hasn&amp;rsquo;t happened yet but it got me interested enough in what Emacs does under the hood when it starts up, particularly when it loads your config and I though it might make an interesting blog post.
+The .emacs file. When Emacs starts up it loads your configuration from a file.</description>
+    </item>
+    
   </channel>
 </rss>
