@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>www.eightbitraptor.com/post/migrating-to-hugo/</loc>
+    <lastmod>2018-12-17T19:30:22+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>www.eightbitraptor.com/about/</loc>
+  </url>
+  
+  <url>
+    <loc>www.eightbitraptor.com/tags/eightbitraptor/</loc>
+    <lastmod>2018-12-17T19:30:22+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>www.eightbitraptor.com/tags/hugo/</loc>
+    <lastmod>2018-12-17T19:30:22+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>www.eightbitraptor.com/tags/jekyll/</loc>
+    <lastmod>2018-12-17T19:30:22+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>www.eightbitraptor.com/tags/meta/</loc>
+    <lastmod>2018-12-17T19:30:22+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>www.eightbitraptor.com/post/</loc>
+    <lastmod>2018-12-17T19:30:22+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>www.eightbitraptor.com/tags/</loc>
+    <lastmod>2018-12-17T19:30:22+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>www.eightbitraptor.com/</loc>
+    <lastmod>2018-12-17T19:30:22+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+</urlset>
