@@ -97,8 +97,18 @@ pre {
   border-bottom: 1px solid #eaeaea;
 }
 
-.front dt {
+.front .word {
+  font-weight: bold;
+  font-size: 22px;
+}
+
+.front .part {
   font-style: italic;
+  font-size: 14px;
+  display: block;
+}
+
+.front .definition-index {
   font-weight: bold;
 }
 
