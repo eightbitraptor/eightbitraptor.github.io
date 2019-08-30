@@ -31,7 +31,7 @@ function getSetLastFM() {
 
     var artistFormatted =
       recentTrack.artist["#text"];
-    var artistSelector = document.querySelector("a#trackartist");
+    var artistSelector = document.querySelector("span#trackartist");
     artistSelector.innerHTML = artistFormatted;
     artistSelector.setAttribute("title", "Artist : " + recentTrack.artist["#text"]);
 
