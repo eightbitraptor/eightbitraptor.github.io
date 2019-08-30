@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.57.2" />
+
+
+<title>The Emacs startup process: Init files - eightbitraptor</title>
+<meta property="og:title" content="The Emacs startup process: Init files - eightbitraptor">
+
+
+  <link href='https://www.eightbitraptor.com/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+<link rel="icon" href="https://www.eightbitraptor.com/images/favicon.ico" type="image/x-icon"/>
+<link rel="stylesheet" href="https://www.eightbitraptor.com/css/main.css" media="all">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Merriweather:400|Lato:400,400italic,700">
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="https://www.eightbitraptor.com/" class="nav-logo">
+    <img src="https://www.eightbitraptor.com/images/avatar.png" 
+         width="100" 
+         height="100" 
+         alt="eightbitraptor.com">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="">GitHub</a></li>
+    
+    <li><a href="">Twitter</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">7 min read</span>
+    
+
+    <h1 class="article-title">The Emacs startup process: Init files</h1>
+
+    
+    <span class="article-date">July 21, 2014</span>
+    
+
+    <div class="article-content">
+      
+
+<p>I started thinking about this when I arranged a short remote pairing
+session to help a friend work through some pain he was having with his
+Emacs configuration. The session hasn&rsquo;t happened yet but it got me
+interested enough in what Emacs does under the hood when it starts up,
+particularly when it loads your config and I though it might make an
+interesting blog post.</p>
+
+<h3 id="the-emacs-file">The <code>.emacs</code> file.</h3>
+
+<p>When Emacs starts up it loads your configuration from a file. It looks
+for this file in a number of places in your home directory, in order,
+these are: <code>~/.emacs</code>, <code>~/.emacs.el</code> and <code>~/.emacs.d/init.el</code>. The
+last form is the most common as it allows you to split your
+configuration up into multiple files. You can then control when these
+are loaded by using <code>require</code>, <code>load</code> or <code>autoload</code> in your
+configuration. This keeps your initial Emacs memory footprint quite
+small and ensures Emacs is quick to load, and just pulls in extra
+libraries and configuration when you need it.</p>
+
+<p>The mode system helps a lot. You&rsquo;ll often see people with files like
+<code>ruby.el</code>, <code>python.el</code> or <code>scheme.el</code> in their emacs directories. They
+will then put all their specific language related config in there and
+with a couple of lines in their main <code>init.el</code> they can only require
+those files the first time they open a specific file, or start a
+specific mode in Emacs</p>
+
+<p>Emacs does not load these its config files sequentially. If it finds a
+<code>~/.emacs</code> file, it will interpret that file and then it will stop
+searching, so you cannot use this mechanism to provide default
+overrideable configuration. But it&rsquo;s OK, Emacs has you covered!</p>
+
+<h3 id="the-site-start-and-default-el-files">The site-start and default.el files</h3>
+
+<p>If you want to provide default Emacs configuration; for instance, if
+you&rsquo;re a system administrator and want to set up some friendly
+overrideable default configuration for your users; Or you use Emacs on
+a bunch of different machines and you want some system specific
+variables defined for each machine, and want to keep them out of your
+main, shared Emacs config; you&rsquo;d put that shared config in either
+<code>site-start.el</code> or <code>default.el</code></p>
+
+<p>These two files need to live somewhere in your Emacs library load
+path. They are loaded on startup around your own custom configuration
+and which one you use depends on how easy you want to make it for
+people to ignore these settings.</p>
+
+<p>The <code>site-start</code> file gets loaded <strong>before</strong> your Emacs file, so any
+configuration set in here will get overridden by conflicting
+information in your config files. For example, you can define some
+keyboard shortcuts in here that will be made available to every Emacs
+user on the system, but won&rsquo;t clobber anything they&rsquo;ve configured to
+use the same keys. You can prevent <code>site-start</code> from being required,
+but because it runs before your config file you have to do it using by
+passing the <code>--no-site-file</code> argument when you start Emacs.</p>
+
+<p>The <code>default</code> file gets loaded after your Emacs configuration, so it
+provides a way of clobbering users&rsquo; custom settings or providing extra
+config that they may have forgotten. This is not something you should
+rely on however, as it&rsquo;s possible by bypass loading this file.</p>
+
+<p>If you set the variable <code>inhibit-default-init</code> to something non-<code>nil</code>
+in your Emacs config it will prevent <code>default.el</code> from being run.</p>
+
+<p>So that&rsquo;s the basics of how Emacs starts and what it loads. You can do
+a lot more than just that however and Emacs offers massive levels of
+control. So let&rsquo;s take a look at some other things that you might need
+to know.</p>
+
+<h3 id="customize-mode">Customize mode</h3>
+
+<p>I&rsquo;ve spelt customise with the American spelling in the title for a
+reason. At some point in your Emacs journey you&rsquo;ll end up looking at
+the Emacs &lsquo;Customize mode&rsquo;. You can get to this by running <code>M-x
+customize</code> and it provides an excellent interface for configuring
+Emacs. Most things that you&rsquo;ll want to do commonly have entries in
+Customize mode, and Emacs provides an API for adding Customize mode
+compatability to your own Emacs lisp libraries.</p>
+
+<p>By default when you change a setting using the Customize interface it
+adds an entry into your <code>init.el</code> that looks like the following:</p>
+
+<pre><code>(custom-set-variables
+;; custom-set-variables was added by Custom.
+;; If you edit it by hand, you could mess it up, so be careful.
+;; Your init file should contain only one such instance.
+;; If there is more than one, they won't work right.
+'(ansi-color-faces-vector [default bold shadow italic underline bold bold-italic bold]))
+</code></pre>
+
+<p>As the warning says, you should avoid touching this block by hand and
+make sure there is only one such block in your Emacs config. Because
+this section feels a little more subject to churn than my standard
+<code>init.el</code> file and because there are more serious consequences to
+breaking it, I like to split it out into its own file, that I can deal
+with separately. Emacs provides a variable that you can set called
+<code>custom-file</code> just for this purpose. By default this value is set to
+<code>nil</code> which tells Emacs to just use your <code>init.el</code>.</p>
+
+<pre><code>;; Store emacs customisation system stuff in a seperate file
+(setq custom-file &quot;~/.emacs.d/customisations.el&quot;)
+(load custom-file)
+</code></pre>
+
+<p>Note that both of the above lines are necessary. The first tells Emacs
+where your Customize options should be saved, and the second tells
+Emacs to load those customisations.</p>
+
+<p>After this change, our current load order looks like this.</p>
+
+<ol>
+<li><code>site-start.el</code></li>
+<li><code>~/.emacs || ~/.emacs.el || ~/.emacs.d/init.el</code></li>
+<li><code>~/.emacs.d/customisations.el</code></li>
+<li><code>default.el</code></li>
+</ol>
+
+<h3 id="other-variables-of-note">Other variables of note.</h3>
+
+<ol>
+<li><p><code>user-emacs-directory</code> - Tell Emacs that you want your config
+directory to live somewhere specific. By Default this is set to
+<code>~/.emacs.d/</code></p></li>
+
+<li><p><code>package-user-dir</code> - Tell Emacs where you want ELPA packages
+placed. These are packages that you install using Emacs 24&rsquo;s built in
+package manager (<code>M-x package-install</code>)</p></li>
+</ol>
+
+<p>I&rsquo;m sure there are plenty more, but these are some important ones that
+I&rsquo;ve used recently. <code>user-emacs-directory</code> particularly can be helpful
+when you want to test or debug changes to your config as you can load
+one then the other to spot changes between them.</p>
+
+<p>Don&rsquo;t forget as well that Emacs has an exceptionally in-depth help
+system built in. You can search it with <code>M-x apropros</code> or find
+information about any variable, function of keybinding using <code>C-h v</code>,
+<code>C-h f</code> and <code>C-h k</code> respectively. This even works for things defined
+in your own Emacs config!</p>
+
+<h3 id="byte-compiling">Byte compiling</h3>
+
+<p>Byte compiling your configuration can speed up the loading of your
+config, and in fact, any Emacs lisp that you write. This is the
+process of turning the source code you write into an intermediary form
+that can be read directly by the Lisp interpreter built into Emacs.</p>
+
+<p>After byte compilation has been carried out you will have a <code>.elc</code>
+file corresponding to every <code>.el</code> file that you have compiled. Their
+contents will contain stuff that looks like the following:</p>
+
+<pre><code>(byte-code &quot;\303\304\305\&quot;\211\203 )\306\307!\203 \307\303\207&quot;
+</code></pre>
+
+<p>When emacs looks for a file to load, it will automatically prefer any
+file ending with <code>elc</code>. That is, when you <code>(require 'foo)</code> If Emacs
+finds a file called <code>foo.elc</code> before it find <code>foo.el</code> while searching
+the load path, it will always load it first, even if the compiled
+version appears later in the load path.  ### Aside: Emacs &amp;
+<code>load-path</code></p>
+
+<p>When we said that Emacs looks in your library load path for the site
+specific files, we neglected to mention what that is. By default it
+contains only 2 entries: <code>/usr/local/share/emacs/version/site-lisp</code>
+and <code>/usr/local/share/emacs/site-lisp</code> in that order. The order
+matters because Emacs will only load the first file that matches what
+it&rsquo;s looking for.</p>
+
+<p>You can override the initial value of your load path by setting the
+environment variable <code>EMACSLOADPATH</code>.</p>
+
+<p>When you are within Emacs you can treat the load path as any other
+list, pushing and popping variables off it at will. There are a few
+other ways that directories can end up on the load path, but they are
+less comonnly used. You can read more about them here:
+<a href="http://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Search.html">http://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Search.html</a></p>
+
+<p>I hope this has been helpful. If you want to dig into this further
+there are some excellent resources online, particularly the Emacs
+manual, which you can access using <code>C-h r</code> from within Emacs or on the
+web <a href="http://www.gnu.org/software/emacs/manual">at the GNU Emacs
+homepage</a></p>
+
+    </div>
+  </article>
+
+  
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="https://www.eightbitraptor.com/images/hugo-logo.png" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+

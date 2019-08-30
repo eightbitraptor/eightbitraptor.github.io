@@ -13,34 +13,43 @@
     
     <item>
       <title>Migrating to Hugo</title>
-      <link>https://www.eightbitraptor.com/post/migrating-to-hugo/</link>
+      <link>https://www.eightbitraptor.com/2018/12/17/migrating-to-hugo/</link>
       <pubDate>Mon, 17 Dec 2018 19:30:22 +0000</pubDate>
       
-      <guid>https://www.eightbitraptor.com/post/migrating-to-hugo/</guid>
+      <guid>https://www.eightbitraptor.com/2018/12/17/migrating-to-hugo/</guid>
       <description>&lt;p&gt;I originally started my first personal site and blog in 2009 on the
 now defunct domain &lt;code&gt;theshadowaspect.com&lt;/code&gt;. It didn&amp;rsquo;t take me long to
 decide that I really wasn&amp;rsquo;t a fan of the name and so in January 2010 I
-registered &lt;code&gt;eightbitraptor.com&lt;/code&gt; where I&amp;rsquo;ve been ever since.&lt;/p&gt;
-
-&lt;p&gt;&lt;/p&gt;</description>
+registered &lt;code&gt;eightbitraptor.com&lt;/code&gt; where I&amp;rsquo;ve been ever since.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>About</title>
+      <link>https://www.eightbitraptor.com/about/</link>
+      <pubDate>Sat, 21 Jul 2018 09:30:00 +0000</pubDate>
+      
+      <guid>https://www.eightbitraptor.com/about/</guid>
+      <description>Hi, I&amp;rsquo;m Matt. I was born in the early 80&amp;rsquo;s in Margate, a seaside town in the county of Kent in the UK. Currently I live in Sevenoaks; still in Kent, but closer to London; with my wife, daughter and our cat.
+I hold a BEng (hons) in Computer Systems Engineering from the University of Kent.
+I also hold a MSc in Broadband and Mobile Communication Networks from the same University after my undergraduate supervisor applied for EPSRC funding on my behalf (and without my knowledge, it was a pleasant surprise).</description>
     </item>
     
     <item>
       <title>Working with headless VirtualBox VM&#39;s</title>
-      <link>https://www.eightbitraptor.com/post/working-with-headless-virtualbox-machines/</link>
+      <link>https://www.eightbitraptor.com/2016/07/08/working-with-headless-virtualbox-vms/</link>
       <pubDate>Fri, 08 Jul 2016 09:30:00 +0000</pubDate>
       
-      <guid>https://www.eightbitraptor.com/post/working-with-headless-virtualbox-machines/</guid>
+      <guid>https://www.eightbitraptor.com/2016/07/08/working-with-headless-virtualbox-vms/</guid>
       <description>I spend a lot of time using both OSX and Linux. Personally I tend to prefer using Linux, however my work have provided me with a MacBook Pro and in order to make working with my colleagues as pain free as possible, I use OSX on it.
 I still like to do a lot of work that relies on being on Linux however, and there are a bunch of ways to acheive this.</description>
     </item>
     
     <item>
       <title>The Emacs startup process: Init files</title>
-      <link>https://www.eightbitraptor.com/post/emacs-startup-file-loading/</link>
+      <link>https://www.eightbitraptor.com/2014/07/21/the-emacs-startup-process-init-files/</link>
       <pubDate>Mon, 21 Jul 2014 09:30:00 +0000</pubDate>
       
-      <guid>https://www.eightbitraptor.com/post/emacs-startup-file-loading/</guid>
+      <guid>https://www.eightbitraptor.com/2014/07/21/the-emacs-startup-process-init-files/</guid>
       <description>I started thinking about this when I arranged a short remote pairing session to help a friend work through some pain he was having with his Emacs configuration. The session hasn&amp;rsquo;t happened yet but it got me interested enough in what Emacs does under the hood when it starts up, particularly when it loads your config and I though it might make an interesting blog post.
 The .emacs file. When Emacs starts up it loads your configuration from a file.</description>
     </item>
