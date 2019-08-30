@@ -93,9 +93,18 @@ pre {
   color: #000;
 }
 
+.front {
+  border-bottom: 1px solid #eaeaea;
+}
+
+.front dt {
+  font-style: italic;
+  font-weight: bold;
+}
+
 .content {
   max-width: 900px;
-  margin: 60px auto 80px;
+  margin: 30px auto 80px;
   padding: 0 15px;
   font-size: 16px;
   line-height: 1.7;
@@ -178,7 +187,7 @@ pre {
 }
 
 .archive-item {
-  margin: 5px 0 15px;
+  margin: 4px 0;
   padding: 0;
 }
 
@@ -276,7 +285,7 @@ pre {
   .content {
     font-size: 19px;
     line-height: 1.8;
-    margin: 100px auto;
+    margin: 30px auto;
   }
 
   .highlight {
