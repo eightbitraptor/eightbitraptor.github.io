@@ -212,7 +212,7 @@ pre {
 .archive-item-link {
   display: inline-block;
   text-decoration: none;
-  font-size: 21px;
+  font-size: 18px;
   font-family: 'Lato', sans-serif;
   font-weight: bold;
   color: #222;
@@ -329,3 +329,4 @@ pre {
     font-size: inherit;
   }
 }
+

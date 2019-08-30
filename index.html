@@ -23,7 +23,9 @@
 <link rel="alternate" type="application/rss+xml" href="https://www.eightbitraptor.com/index.xml" title="eightbitraptor" />
 <link rel="icon" href="https://www.eightbitraptor.com/images/favicon.ico" type="image/x-icon"/>
 <link rel="stylesheet" href="https://www.eightbitraptor.com/css/main.css" media="all">
+<link rel="stylesheet" href="https://www.eightbitraptor.com/css/lastfm.css" media="all">
 <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Merriweather:400|Lato:400,400italic,700">
+<script src="https://www.eightbitraptor.com/js/lastfm.js"></script>
 
   </head>
   <body>
@@ -31,9 +33,9 @@
       <header class="header">
         <nav class="nav">
   <a href="https://www.eightbitraptor.com/" class="nav-logo">
-    <img src="https://www.eightbitraptor.com/images/avatar.png" 
-         width="100" 
-         height="100" 
+    <img src="https://www.eightbitraptor.com/images/avatar.png"
+         width="100"
+         height="100"
          alt="eightbitraptor.com">
   </a>
 
@@ -51,19 +53,29 @@
 
 <main class="content" role="main">
 
-<div class="front">
-  <dl>
-    <dt>
-      <span class="word">eightbitraptor</span>
-      <span class="pronunciation">/eɪtbɪtˈræptə(r)/</span>
-      <span class="part">noun.</span>
-    </dt>
-    <dd>
-      <span class="definition-index">1.</span> Mediocre programmer. Generally forgettable human. Otaku. Drinks a lot of coffee. Listens to loud music
-    </dd>
-</div>
+  <div class="front">
+    <dl>
+      <dt>
+        <span class="word">eightbitraptor</span>
+        <span class="pronunciation">/eɪtbɪtˈræptə(r)/</span>
+        <span class="part">noun.</span>
+      </dt>
+      <dd>
+        <span class="definition-index">1.</span> Mediocre programmer. Generally forgettable human. Otaku. Drinks a lot of coffee. Listens to loud music
+      </dd>
+  </div>
+  <div class="nowplayingcard">
+    <h3>Currently Listening</h3>
+    <div class="nowplayingcontainer-inner">
+      <img id="trackart" src="#">
+      <div class="trackInfo">
+        <a id="tracktitle"></a>
+        <a href="#" id="trackartist"></a>
+      </div>
+    </div>
+  </div>
   <div class="archive">
-    <h2>Posts</h2>
+    <h3>Posts</h3>
     
     
     <article class="archive-item">

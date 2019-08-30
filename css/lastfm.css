@@ -1,0 +1,55 @@
+.nowplayingcard {
+  border-bottom: 1px solid #eaeaea;
+}
+
+.nowplayingcard .nowplayingcontainer-inner {
+  display: inline-block;
+}
+
+.nowplayingcard .nowplayingcontainer-inner img#trackart {
+  max-width: 30%;
+  float: left;
+  left: 0;
+}
+
+.nowplayingcard .nowplayingcontainer-inner .trackInfo {
+  width: 70%;
+  float: left;
+  display: block;
+}
+
+.nowplayingcard .nowplayingcontainer-inner .trackInfo a {
+  max-width: 90%;
+  display: block;
+  text-align: left;
+  text-decoration: none;
+  vertical-align: middle;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.nowplayingcard .nowplayingcontainer-inner .trackInfo a:nth-child(odd) {
+  color: black;
+  font-weight: bold;
+  vertical-align: middle;
+  line-height: 15px;
+  letter-spacing: 0.2px;
+  padding: 10% 0 0 5%;
+}
+.nowplayingcard .nowplayingcontainer-inner .trackInfo a:nth-child(odd) img {
+  width: 15px;
+  height: 15px;
+  vertical-align: middle;
+  margin: -2% 3px 0 0;
+}
+.nowplayingcard .nowplayingcontainer-inner .trackInfo a:nth-child(even) {
+  color: gray;
+  font-size: 12px;
+  letter-spacing: 0.1px;
+  padding: 5% 0 0 5%;
+}
+.nowplayingcard .nowplayingcontainer-inner .trackInfo a:nth-child(even) img {
+  width: 15px;
+  height: 15px;
+  vertical-align: middle;
+  margin: -2% 3px 0 0;
+}
