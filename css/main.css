@@ -19,9 +19,12 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: 'Lato', sans-serif;
   color: #222;
+  font-size: 18px;
 }
+
+h1 { font-size: 22px; }
+h2 { font-size: 20px; }
 
 a {
   outline: none;
@@ -122,7 +125,6 @@ pre {
 }
 
 .article-title {
-  font-size: 34px;
   color: #222;
   margin: 0;
   line-height: 1.3;
@@ -187,7 +189,6 @@ pre {
   padding: 0;
   list-style: none;
   line-height: 1.3em;
-  text-align: center;
   color: #111;
 }
 
@@ -235,7 +236,7 @@ pre {
   margin: 0;
   padding: 0;
   color: #ccc;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .footer-links li {
@@ -293,7 +294,7 @@ pre {
   }
 
   .content {
-    font-size: 19px;
+    font-size: 18px;
     line-height: 1.8;
     margin: 30px auto;
   }
@@ -312,21 +313,12 @@ pre {
   }
 
   .archive-item-date {
-    font-size: 19px;
     text-align: right;
     float: right;
   }
 
-  .article-title {
-    font-size: 42px;
-  }
-
   .article-duration {
     font-size: 12px;
-  }
-
-  .footer-links {
-    font-size: inherit;
   }
 }
 
