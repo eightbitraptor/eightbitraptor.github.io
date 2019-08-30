@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Hugo on eightbitraptor</title>
+    <link>https://www.eightbitraptor.com/tags/hugo/</link>
+    <description>Recent content in Hugo on eightbitraptor</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-gb</language>
+    <lastBuildDate>Mon, 17 Dec 2018 19:30:22 +0000</lastBuildDate>
+    
+	<atom:link href="https://www.eightbitraptor.com/tags/hugo/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Migrating to Hugo</title>
+      <link>https://www.eightbitraptor.com/post/migrating-to-hugo/</link>
+      <pubDate>Mon, 17 Dec 2018 19:30:22 +0000</pubDate>
+      
+      <guid>https://www.eightbitraptor.com/post/migrating-to-hugo/</guid>
+      <description>&lt;p&gt;I originally started my first personal site and blog in 2009 on the
+now defunct domain &lt;code&gt;theshadowaspect.com&lt;/code&gt;. It didn&amp;rsquo;t take me long to
+decide that I really wasn&amp;rsquo;t a fan of the name and so in January 2010 I
+registered &lt;code&gt;eightbitraptor.com&lt;/code&gt; where I&amp;rsquo;ve been ever since.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>
