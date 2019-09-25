@@ -6,10 +6,20 @@
     <description>Recent content on eightbitraptor</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-gb</language>
-    <lastBuildDate>Mon, 17 Dec 2018 19:30:22 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 25 Sep 2019 12:08:31 +0100</lastBuildDate>
     
 	<atom:link href="https://www.eightbitraptor.com/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Whats in My Bag: Coffee Shop Edition</title>
+      <link>https://www.eightbitraptor.com/2019/09/25/whats-in-my-bag-coffee-shop-edition/</link>
+      <pubDate>Wed, 25 Sep 2019 12:08:31 +0100</pubDate>
+      
+      <guid>https://www.eightbitraptor.com/2019/09/25/whats-in-my-bag-coffee-shop-edition/</guid>
+      <description>The Every Day Carry (EDC) community is an internet subculture that seems to have originated with firearms enthusiasts in the USA and has slowly been spreading out to the rest of the internet. There&amp;rsquo;s a dedicated subreddit, a lifestyle blog, and Vox have even written articles about it.
+The basic premise is to think, reflect and iterate on the items that people carry in their pockets, handbags or rucksacks to optimise them for the tasks which will occupy most of the day; often with an alternative motive of showing off the shiny things in the most photogenic way possible!</description>
+    </item>
     
     <item>
       <title>Migrating to Hugo</title>
