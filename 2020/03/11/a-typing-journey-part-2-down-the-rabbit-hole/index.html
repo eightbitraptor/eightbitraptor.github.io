@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.67.0" />
+
+
+<title>A typing journey, part 2: Down the rabbit hole - eightbitraptor</title>
+<meta property="og:title" content="A typing journey, part 2: Down the rabbit hole - eightbitraptor">
+
+
+  <link href='https://www.eightbitraptor.com/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+<link rel="icon" href="https://www.eightbitraptor.com/images/favicon.ico" type="image/x-icon"/>
+<link rel="stylesheet" href="https://www.eightbitraptor.com/css/main.css" media="all">
+<link rel="stylesheet" href="https://www.eightbitraptor.com/css/lastfm.css" media="all">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Merriweather:400|Lato:400,400italic,700">
+<script src="https://www.eightbitraptor.com/js/lastfm.js"></script>
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="https://www.eightbitraptor.com/" class="nav-logo">
+    <img src="https://www.eightbitraptor.com/images/avatar.png"
+         width="100"
+         height="100"
+         alt="eightbitraptor.com">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://www.github.com/eightbitraptor">GitHub</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">9 min read</span>
+    
+
+    <h1 class="article-title">A typing journey, part 2: Down the rabbit hole</h1>
+
+    
+    <span class="article-date">March 11, 2020</span>
+    
+
+    <div class="article-content">
+      <p>In my last post about mechanical keyboards, I was getting ready to dip my toe
+into the weird and wonderful world of custom ergonomic keyboards. Young and full
+of naïvete I hadn&rsquo;t fully grasped the depth of the hobby I was about to pick up,
+nor quite how tight it would grab me!</p>
+<p>Fast forward a few months, and in addition to owning and using <a href="https://falba.tech/custom-redox/">my bamboo
+Redox</a> every day, I&rsquo;ve also:</p>
+<ul>
+<li>Dissassembled it to lubricated all the switches with a locally sourced
+alternative to Krytox 205g0 (a very popular grease in &ldquo;the keyboard
+community&rdquo;, but expensive and hard to find outside the US);</li>
+<li>Built a 40% ergonomic keyboard (<a href="https://github.com/foostan/crkbd">the Crkbd, or Corne
+keyboard</a> an open source project from Japan)</li>
+<li>Joined a keyboard &ldquo;group-buy&rdquo; for a set of <a href="https://geekhack.org/index.php?topic=104129.0">limited run custom
+keycaps</a> which I am waiting to
+receive</li>
+<li>And I&rsquo;m about 70% of the way towards designing and building my own custom
+keyboard from scratch, and it&rsquo;s this project that I want to talk about in the
+next few posts.</li>
+</ul>
+<div class='centered-image'>
+  <img alt="Boy, that escalated quickly" src="/images/escalation.gif">
+</div>
+<p>For something so innocuous and generally overlooked as the keyboard attached to
+your computer, the depths some folks go to in search of perfection (or the &ldquo;end
+game&rdquo;) are staggering.</p>
+<p>I&rsquo;ve learned an awful lot since I started this adventure. As well as basic
+knowledge about keyboards, their history and all the different variations that
+exist around the world, I&rsquo;ve also learned how they&rsquo;re made. I&rsquo;ve spent time
+writing and customising the source code that runs on my keyboards (contributing
+to open source in the process), I&rsquo;ve learned how to use <a href="">AutoDesk Fusion 360</a>
+to do 3D modelling and CAD, both for CNC machining purposes and for 3D printing,
+I&rsquo;ve also relearned how to design electronics schematics, convert those into
+printed circuit board designs and how to manufacture electronics, none of which
+I&rsquo;ve had cause to do since finishing my BSc 15 years ago!</p>
+<p><img src="/images/current_keyboards_feb20.jpeg" alt="My current keyboards"></p>
+<h2 id="background-or-why-am-i-building-a-keyboard">Background. Or, Why am I building a keyboard</h2>
+<p>There are a few ways in which you can go deep into the mechanical keyboards
+hobby, and one of the ways that immediately captured my interest is the high-end
+custom keyboard scene. These are keyboards that have been designed from the
+ground up by individual people, mostly sold in kit form (so you can customise it
+with your own choice of switches and keycaps), manufactured in a small quanitity
+out of premium materials, and funded up front in a process called a &ldquo;group buy&rdquo;.</p>
+<p>A group buy typically goes like this:</p>
+<p>Someone has an idea for a new keyboard, they put together a design in a cad
+package, maybe a few renders and they write a bit about what they want to do.
+They post up an &ldquo;Interest check&rdquo;, or IC thread on a keyboard community forum
+like Geekhack.</p>
+<p>People comment on the thread, generally expressing interest, intent to buy or
+design suggestions. This kicks off an iterative process where the original
+designer might incorporate feedback into the idea, or clarify their thinking in
+certain ways. At this point either the hype begins, or an idea fizzles out and
+dies.</p>
+<p>Assuming the hype train is well and truly picking up steam, the designer will
+then start approaching manufacturing companies to try and get an idea of what
+the costs for a manufacturing run would be, what the minimum order quantity is
+and how that is going to affect the cost. They will probably also order one or
+more prototypes at this stage to check the feasibility of the design. The
+prototypes will then allow them to refine further to make manufacturing easier
+or more cost effective.</p>
+<p>At this point a designer will generally know what the final design is, how it&rsquo;s
+going to be manufactured, what all the options are as well as their retail price
+and how many they need to sell in order to make that price achievable. They&rsquo;ll
+probably also have some accaurate renders of the finished product and maybe a
+prototype or two that they can show off. At this point they&rsquo;ll generally start
+trying to find &ldquo;proxies&rdquo; to sell their product.</p>
+<p>Because this whole process is not uncommon in the mechanical keyboard world, a
+lot of the <a href="https://novelkeys.xyz/collections/group-buys">community</a>
+<a href="https://mykeyboard.eu/catalogue/category/group-buys_20/">favourite</a>
+<a href="https://candykeys.com/group-buys">retailers</a> will often manage sales of a group
+buy product, for a small fee. This is referred to as being a proxy.</p>
+<p>This means that a customer can place an order for the product as they would do
+normally for any other in-stock item on that store, but instead of having
+something shipped to them immediately, the money is taken and held in escrow by
+the proxy. This allows the designer to have confidence that the money is there
+and that the group buy customers are committed (typically proxies for group buys
+don&rsquo;t allow refunds), and it also gives the customers some security because
+they&rsquo;re paying via credit card or paypal to an actual business, rather than
+transferring money to some rando on the internet.</p>
+<p>Once the proxies have been set up, then the action happens. The designer posts a
+Group Buy (or GB) thread on the same forum where they opened their IC. They post
+all the details of the product, as well as the options available, the pricing
+scheme and links to the proxies where you can go to place your order, and
+they&rsquo;ll typically specify a date that the group buy will &ldquo;open&rdquo; or be available
+for purchase.</p>
+<p>Group buy sales typically stay &ldquo;open&rdquo; on the proxies either until a desired
+quantity has been purchased, or they stay open for a set time window. This is
+another critical point in the lifecycle of a group buy. If not enough units sell
+to hit the factory specified MOQ then the group buy dies, the proxies refund the
+money to the buyers and the designer goes back to the drawing board.</p>
+<p>A lot of the time, MOQ&rsquo;s are hit quite quickly - for some of the more well known
+and respected group buy runners this will be in the order of a few minutes. Once
+the MOQ has been hit, the buyer has nothing left to do but wait for their
+purchase to arrive. But for the designer, it&rsquo;s crunch time. They&rsquo;ve got to work
+with the manufacturing companies to get cases built and finished, PCB&rsquo;s
+manufactured and built, and get everything packaged up and shipped to the buyers.</p>
+<p>This process will take months at best, and can often take a lot longer than
+expected owing to unforseen manufacturing issues, delays, and quality control
+issues (my keyset group buy closed at the end of January 2020, and I will
+consider myself lucky if I receive them in July).</p>
+<p><img src="/images/kat_lich_render.jpg" alt="A very elegant render of the KAT Lich keycap set"></p>
+<p>All in all it&rsquo;s not uncommon for a group buy to take 12-18 months from initial
+interest check to actually receiving a kit that you can build.</p>
+<p>These methods of manufacturing and distribution generally mean that there&rsquo;s a
+lot of hype around these keyboards and they&rsquo;re very hard to get. Minimum order
+quantities aren&rsquo;t high, GB runs are mostly for &lt; 50 keyboards and because the
+interest checks are started so far in advance there is usually a lot of people
+fighting for any keyboard that&rsquo;s made it to manufacturing stage.</p>
+<p>The intense design process and small scale means that these keyboards are often
+very expensive, most commonly around the $400-$600 USD price bracket once you
+take into account various options, shipping and customs charges. So if you can
+get one, they&rsquo;re often used a status symbol, and all these factors have
+translated into a cut-throat and massively inflated second hand market, where
+it&rsquo;s not uncommon to see popular designs changing hands for $2000 USD and
+upwards.</p>
+<h2 id="where-do-i-fit-in">Where do I fit in</h2>
+<p>I have been following the custom keyboard scene for a while, and I really wanted
+to get one. I love the idea of having a heavy weight premium keyboard that
+sounds and feels great to type on, and has some exclusivity to it. I also fell
+in love with <a href="https://geekhack.org/index.php?topic=97810.0">the Kyuu keyboard</a>,
+but that is ancient history in terms of keyboard group buys having been shipped
+way back in 2018.</p>
+<p><img src="/images/kyuu.jpg" alt="the Kyuu 65% keyboard"></p>
+<p>So I was lurking over group buys and interest checks and waiting to see if
+anything caught my eye enough to want to drop several hundred pounds on it. I
+even bought a set of keycaps intended for a keyboard I didn&rsquo;t yet own (the KAT
+Lich group buy that I&rsquo;ve mentioned above).</p>
+<p>During this time I stumbled upon <a href="https://www.reddit.com/r/CustomKeyboards/comments/eoq1u8/a_simple_wedge/">this Reddit post where a user called vitaport
+talks about a personal keyboard that they&rsquo;ve designed and
+manufactured</a>.
+Suddenly a bunch of neurons that had been slowly idling suddenly fired up and
+connected. All these keyboards are built by individual humans, there&rsquo;s nothing
+special about people that run group buys and if you&rsquo;re going to design a
+keyboard you don&rsquo;t <em>have</em> to run a group buy. You could just do what vitaport
+has done and make your own personal keyboard. I have a background in electronic
+engineering, and I&rsquo;m a professional software developer, surely I can dredge up
+enough memories to put together some circuitry, and it&rsquo;s not beyond me to learn
+how to build a keyboard case!</p>
+<p>I was excited.</p>
+<p>Instead of just plonking down a load of cash and receiving a keyboard in the
+mail, I would plonk down a load of cash, learn a bunch of new skills and end up
+with a keyboard that is truly mine and truly exclusive at the end of it. This
+sounded immensely satisfying to me.</p>
+<p>So I did some digging, and found out that once you scratch the surface of the
+mechanical keyboard community, scrape off the layer of drama and flippers and
+superficiality, you reach a really solid core. Full of people who are friendly,
+helpful and excited to share resources and tips on how to get from a blank peice
+of paper to an actual real keyboard that you can type on. There&rsquo;s lots of
+overlap with maker culture and a real DIY aesthetic, and I&rsquo;m having loads of
+fun.</p>
+<p>I&rsquo;m doing the project in the open on Github. I had originally wanted the
+repository to be self contained and have everything you needed in it to follow
+along with the process using the Git history, but unfortunately my discipline
+with personal projects isn&rsquo;t quite up to the stringent standards I set for
+myself at work, so the history is a mess.</p>
+<p>So I decided to write a series of posts about the journey, to explain how I am
+making a custom keyboard. This is part one, a basic introduction to what I&rsquo;m
+doing and why. In part 2 I&rsquo;ll talk about how I got started, what the anatomy of
+a custom keyboard looks like, and what the first steps were.</p>
+<div class="centered">
+  <h4>
+    <a href="https://github.com/eightbitraptor/65_keyboard_untitled">See eightbitraptor's 65% Untitled Keyboard repository on Github</a>
+  </h4>
+</div>
+
+    </div>
+  </article>
+
+  
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with Hugo</a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+

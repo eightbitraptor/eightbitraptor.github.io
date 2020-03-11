@@ -124,6 +124,14 @@ pre {
   color: #555;
 }
 
+.content .centered-image {
+  text-align: center;
+}
+
+.content .centered {
+  text-align: center;
+}
+
 .article-title {
   color: #222;
   margin: 0;
