@@ -315,14 +315,8 @@ pre {
   .archive {
     text-align: left;
   }
-
   .archive-title {
     font-size: 38px;
-  }
-
-  .archive-item-date {
-    text-align: right;
-    float: right;
   }
 
   .article-duration {
