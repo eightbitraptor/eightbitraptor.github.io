@@ -167,6 +167,11 @@ pre {
   transition: background 150ms ease;
 }
 
+.article-content img {
+  width: 45%;
+  display: inline;
+}
+
 .article-content a:hover,
 .article-content a:focus {
   background: #CBF8DF;
