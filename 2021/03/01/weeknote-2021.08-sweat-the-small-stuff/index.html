@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.80.0" />
+
+
+<title>Weeknote 2021.08: Sweat the small stuff - eightbitraptor</title>
+<meta property="og:title" content="Weeknote 2021.08: Sweat the small stuff - eightbitraptor">
+
+
+  <link href='https://www.eightbitraptor.com/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+<link rel="icon" href="https://www.eightbitraptor.com/images/favicon.ico" type="image/x-icon"/>
+<link rel="stylesheet" href="https://www.eightbitraptor.com/css/main.css" media="all">
+<link rel="stylesheet" href="https://www.eightbitraptor.com/css/lastfm.css" media="all">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Merriweather:400|Lato:400,400italic,700">
+<script src="https://www.eightbitraptor.com/js/lastfm.js"></script>
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="https://www.eightbitraptor.com/" class="nav-logo">
+    <img src="https://www.eightbitraptor.com/images/avatar.png"
+         width="100"
+         height="100"
+         alt="eightbitraptor.com">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://www.github.com/eightbitraptor">GitHub</a></li>
+    
+    <li><a href="https://wiki.eightbitraptor.com">Wiki</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">3 min read</span>
+    
+
+    <h1 class="article-title">Weeknote 2021.08: Sweat the small stuff</h1>
+
+    
+    <span class="article-date">March 1, 2021</span>
+    
+
+    <div class="article-content">
+      <ul>
+<li>
+<p>Not much to report again this week. Still waiting on keyboard PCB&rsquo;s so no
+change on that front.</p>
+</li>
+<li>
+<p>Did knock up a quick 3d print case design loosely based on the old IBM F22
+Kishsaver design. haven&rsquo;t finished printing and assembling it yet so no pics
+for now; I don&rsquo;t want to ruin the surprise.</p>
+</li>
+<li>
+<p>After a bit of an abortive start last time. I started to run again.  I&rsquo;ve
+scaled back a bit and been a bit more thoughtful about the process. I&rsquo;ve
+calendared in 3 runs a week, on Monday, Wednesday, and Friday, with a tentative
+cycle ride on Sunday.  I&rsquo;m also running a much shorter distance to start with
+and am alternating periods of running and walking so that I can build up my
+ability slowly (in the same vein as couch to 5k). I&rsquo;m already seeing some
+improvements after just a week which I&rsquo;m super happy about.</p>
+</li>
+<li>
+<p>I have a problem with detail. This reared it&rsquo;s head again this week when I
+spent almost 3 days debugging a problem that ended up being caused by my use
+of the wrong bitmap during one of the mark functions (for the curious: in
+Rubys GC, <code>HEAP_MARK_BITS</code> are not the same as <code>HEAP_MARKING_BITS</code>).</p>
+<p>Predictably as soon as I asked for help and paired on this problem we spotted
+it within 20 minutes and I felt like an idiot.</p>
+<p>After feeling (rightly, imo) angry about the confusing and slightly
+disingenuous naming patterns in the MRI source code, I pushed that thought
+away and realised that this was just another instance of a pattern of
+behaviour that has haunted me for years.</p>
+<p>I can be detail blind, and I don&rsquo;t know what to do to fix it.</p>
+<p>Within a work context this often manifests in one of two main ways:</p>
+<ul>
+<li>I finish a feature, push a PR and then spend days fixing feedback from my
+colleagues in the form of small changes that often seem like nitpicks. A
+misleading variable name here, a typo there, a slightly obtuse algorithm in
+that other place. Or</li>
+<li>Upon discovering a bug, I go down a rabbit hole for a long time, exploring
+the problem, checking the algorithms and high level approach, making sure
+that the test cases are thorough only to discover that the bug was caused
+either by a typo, or by a trivial mistake that in hindsight should have
+been obvious.</li>
+</ul>
+<p>I know I have a tendancy to zoom out and focus on slightly higher level
+concerns. When I&rsquo;m building a feature I focus on whether the approach makes
+sense, whether I&rsquo;m using appropriate patterns and data structures, or whether
+the object graph makes sense, so much so that I lose sight of the smaller
+detail. This seems to get more acute the higher mental pressure the work has,
+so whetherI am fixing a problem in my code? someone elses code? refactoring a
+feature or building a new feature (probably in that order, high to low).</p>
+<p>Anyway. I haven&rsquo;t worked out what to do about this yet and it sucks because
+it&rsquo;s embarrassing and it&rsquo;s holding me back.</p>
+<p>But the first step to fixing a problem is admitting you have one, right?</p>
+</li>
+<li>
+<p>I updated <a href="/docs/mattvh-user-manual.pdf">my User Manual</a>.</p>
+<p>I&rsquo;ve been keeping this up to date as I move between jobs and as I learn more
+about myself since I was working at FutureLearn. I don&rsquo;t think I&rsquo;ve ever
+shared it publicly before, but seeing as this week is a slow news week I may
+as well!</p>
+</li>
+</ul>
+
+    </div>
+  </article>
+
+  
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with Hugo</a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+
