@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.82.0" />
+
+
+<title>GC in Ruby: Part 1, An overview of memory layout - eightbitraptor</title>
+<meta property="og:title" content="GC in Ruby: Part 1, An overview of memory layout - eightbitraptor">
+
+
+  <link href='https://www.eightbitraptor.com/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+<link rel="icon" href="https://www.eightbitraptor.com/images/favicon.ico" type="image/x-icon"/>
+<link rel="stylesheet" href="https://www.eightbitraptor.com/css/main.css" media="all">
+<link rel="stylesheet" href="https://www.eightbitraptor.com/css/lastfm.css" media="all">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Merriweather:400|Lato:400,400italic,700">
+<script src="https://www.eightbitraptor.com/js/lastfm.js"></script>
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="https://www.eightbitraptor.com/" class="nav-logo">
+    <img src="https://www.eightbitraptor.com/images/avatar.png"
+         width="100"
+         height="100"
+         alt="eightbitraptor.com">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://www.github.com/eightbitraptor">GitHub</a></li>
+    
+    <li><a href="https://wiki.eightbitraptor.com">Wiki</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">19 min read</span>
+    
+
+    <h1 class="article-title">GC in Ruby: Part 1, An overview of memory layout</h1>
+
+    
+    <span class="article-date">March 23, 2021</span>
+    
+
+    <div class="article-content">
+      <h2 id="introduction-and-raison-dêtre">Introduction (and raison d&rsquo;être)</h2>
+<p>My working life is currently spent working on the internals of Matz&rsquo;s Ruby Interpreter(<a href="https://www.ruby-lang.org/en/about/">MRI</a>) as part of the Ruby Infrastructure team at Shopify.</p>
+<p>I am pretty new to this kind of work. I&rsquo;ve been a Ruby developer for a long time, but when I moved to this team in June 2020 I had no professional experience writing C, and had never seen the inside of a programming language interpreter before. So a lot of concepts were (and still are) very new to me.</p>
+<p>I&rsquo;ve been learning a lot, through my work and through self-directed study. One of the tools that has always helped me learn about something is to write about it.</p>
+<p><a href="https://tenderlovemaking.com/2017/09/27/visualizing-your-ruby-heap.html">Many</a> <a href="https://blog.peterzhu.ca/notes-on-ruby-gc/">smarter</a> <a href="https://jemma.dev/blog/gc-mark-and-sweep">people</a> <a href="https://ruby-hacking-guide.github.io/gc.html">than</a> <a href="https://www.atdot.net/~ko1/activities/rgengc_ismm.pdf">me</a> have written a lot about memory layout and GC in Ruby, so these posts are probably not going to add a lot to the discussion, which is why I&rsquo;ve held off from posting them for so long.</p>
+<p>That being said, I decided to publish this here anyway. There&rsquo;s always a slim possibility it&rsquo;s entertaining/useful to someone, and if nothing else, it&rsquo;ll be a good backup so I can find it again in the future.</p>
+<p>According to the notes that went along with this post there&rsquo;s a section about all the posts I apparently intended to write:</p>
+<ol>
+<li>The Heap structure, memory management, requirements (ie. this post)</li>
+<li>Garbage Collection, Mark and sweep and how it&rsquo;s implemented. How it&rsquo;s triggered, tricolour abstraction</li>
+<li>RGENGC, The Generational garbage collector, old and new objects and the transient heap. Major and minor collections.</li>
+<li>RINCGC, The incremental garbage collector, incremental marking, incremental sweeping</li>
+<li>Compaction, auto-compaction</li>
+<li>Variable width allocation (<a href="https://bugs.ruby-lang.org/issues/17570">my current work project</a>) and its implications.</li>
+</ol>
+<p>So far I have only done <code>1</code>. So I&rsquo;ll just leave this here and lets let history be the judge of how far I got.</p>
+<h2 id="synopsis">Synopsis</h2>
+<p>Garbage Collection in Ruby<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup> is an interesting and varied picture these days. This series of posts will attempt to explain the various different collectors that are in operation inside Ruby and how they work.</p>
+<p>The code snippets included in this post are all correct as of <a href="https://github.com/ruby/ruby/commit/f4386413f16f9e492a74f6b65e981e20e22c4849">this commit on Ruby&rsquo;s master branch</a></p>
+<p>Before we can start talking about garbage collection, we need to understand how Ruby organises memory. How objects are created and allocated and what happens during the lifecycle of a Ruby process.</p>
+<h2 id="rvalues-objects-and-how-we-identify-them">RValues, Objects, and how we identify them.</h2>
+<p>The first thing that we need to know is that all Ruby objects are the same size. They are stored as C structs that are 40 bytes wide called <code>RVALUE</code>s. There are shenanigans that happen when an objects data cannot actually fit inside of 40 bytes (consider a long string for example), but, for the purposes of garbage collection we just need to remember that every Ruby object corresponds to exactly one <code>RVALUE</code>.</p>
+<p>Here is the basic structure of an <code>RVALUE</code>. Some parts that aren&rsquo;t relevant to this topic have been elided for readability.</p>
+<pre><code class="language-c=" data-lang="c=">typedef struct RVALUE {
+    union {
+	struct {
+	    VALUE flags;		/* always 0 for freed obj */
+	    struct RVALUE *next;
+	} free;
+        struct RMoved  moved;
+	struct RBasic  basic;
+	struct RObject object;
+	struct RClass  klass;
+	struct RFloat  flonum;
+	struct RString string;
+	struct RArray  array;
+	struct RRegexp regexp;
+	struct RHash   hash;
+	struct RData   data;
+	struct RTypedData   typeddata;
+	struct RStruct rstruct;
+	struct RBignum bignum;
+	struct RFile   file;
+	struct RMatch  match;
+	struct RRational rational;
+	struct RComplex complex;
+        /* .... */
+    } as;
+} RVALUE;
+</code></pre><p>An <code>RVALUE</code> contains a union of every possible Ruby type (such as <code>RString</code>, <code>RClass</code>, <code>RHash</code> etc), as well as some internal types under the member name <code>as</code>. This means that we need to know what type the <code>RVALUE</code> is before we can safely operate on it.</p>
+<p>Developers familiar with using unions in C will recognise a consequence of this arrangement, which is that without some kind of type information it&rsquo;s possible for us to treat one member of a union as a different member.</p>
+<p>This can get us into trouble, as the memory layout wouldn&rsquo;t necessarily map to the member fields of the other struct.</p>
+<p>For example: Assume we have an <code>RVALUE</code> pointer called <code>rval</code> that represents a String (<code>RString</code> in Ruby parlance). The correct way to access the data for that string is</p>
+<pre><code class="language-c=" data-lang="c=">RString str;
+str = rval-&gt;as.string;
+</code></pre><p>But, there&rsquo;s nothing stopping us from accessing it as something else. We could equally assume that <code>rval</code> is a <code>Regexp</code></p>
+<pre><code class="language-c=" data-lang="c=">RRegexp regex;
+regex = rval-&gt;as.regexp;
+</code></pre><p>And in this case, because <code>struct RString</code> and <code>struct RRegexp</code> have different layouts, the information is going to be garbled. In the best case our code will error, and in the worst case we&rsquo;ll be able to use the <code>struct</code> in ways that look sensible but are wrong - causing hard to detect problems later on in our code.</p>
+<p>Ruby does provide type tagging to mitigate this in a struct called <code>RBasic</code> that is always defined consistently at the start of every type struct included in the <code>as</code> union.</p>
+<p><code>RBasic</code> is defined as follows:</p>
+<pre><code class="language-c=" data-lang="c=">struct RBasic {
+    VALUE flags;                /**&lt; @see enum ::ruby_fl_type. */
+    const VALUE klass;
+};
+</code></pre><p>And we can see how it&rsquo;s used by looking at <code>RString</code> and <code>RArray</code> as examples.</p>
+<pre><code class="language-c=" data-lang="c=">// rstring.h
+struct RString {
+    struct RBasic basic;
+    /* .... content snipped .... */
+}
+
+//rarray.h
+struct RArray {
+    struct RBasic basic;
+    /* .... content snipped .... */
+}
+
+/* and so on for all other Ruby types */
+</code></pre><p>Because <code>basic</code> is always the first member of the struct, it is therefore in the same memory location relative to the start of every <code>RVALUE</code>. This means that it&rsquo;s always possible to get hold of the <code>flags</code> and <code>klass</code> in a consistent way no matter the <code>RVALUE</code> type:</p>
+<pre><code class="language-c=" data-lang="c=">VALUE flags = rval-&gt;as.basic.flags;
+VALUE my_klass = rval-&gt;as.basic.klass;
+</code></pre><p>The <code>RBasic</code> struct is relatively compact, taking up just 16 bytes (<code>VALUE</code> is a type alias for an <code>unsigned long</code>, which is 8 bytes on a 64 bit architecture).</p>
+<p>The <code>flags</code> member is treated as an array of bits, and stores a lot of information about the state of an object, whether it&rsquo;s frozen, whether it&rsquo;s a singleton and much more, including some user-definable bits that can be used when implementing new Ruby types - but importantly for us, the 5 least significant bits are used to store a builtin type code.</p>
+<p>The <code>klass</code> member is also a <code>VALUE</code> but in this case it&rsquo;s being used as a pointer (more on this later), to an <code>RValue</code> object of type <code>RClass</code>, this loosely corresponds to the Ruby class of the object being represented.</p>
+<p>So now we have a consistent way of finding out which builtin type an <code>RVALUE</code> is, as well as it&rsquo;s Ruby class.</p>
+<p>Ruby provides pre-processor macros to make working with this information easier and less error-prone than accessing the flags manually every time, and these macros make working with <code>RVALUE</code>s easier.</p>
+<p>The first is <code>BUILTIN_TYPE</code>. This takes a pointer to an <code>RValue</code> as its argument, dereferences it, applies a mask to the <code>flags</code> to focus just on the type bits, and then compares that to a known list of types. A good example can be seen in the <code>obj_free</code> function inside <code>gc.c</code>. This function reclaims memory for objects that are no longer needed, and the way in which memory is reclaimed will depend on how the object in question stores references to its external data.</p>
+<pre><code class="language-c=" data-lang="c=">switch (BUILTIN_TYPE(obj)) {
+    case T_OBJECT:
+        /* .... some stuff .... */
+        break;
+    case T_MODULE:
+    case T_CLASS:
+        /* .... some stuff .... */
+        break;
+    case T_STRING:
+        /* .... some stuff .... */
+        break;
+    case T_ARRAY:
+        /* .... some stuff .... */
+        break;
+    case T_HASH:
+        /* .... some stuff .... */
+        break;
+    /* ... and so on for all other builtin types .... */
+</code></pre><p>Another is <code>RB_TYPE_P</code>, which is a predicate allowing you to check an <code>RVALUE</code> against a specific type. You can see this being used in <code>string.c</code>: <code>rb_str_eql</code> is the underlying function that runs when you call <code>String#eql?</code> in your Ruby code.</p>
+<pre><code class="language-c=" data-lang="c=">VALUE
+rb_str_eql(VALUE str1, VALUE str2)
+{
+    if (str1 == str2) return Qtrue;
+    if (!RB_TYPE_P(str2, T_STRING)) return Qfalse;
+    return rb_str_eql_internal(str1, str2);
+}
+</code></pre><p>From this code we can see that we first check whether the argument and the receiver are the exact same string, if they&rsquo;re not then we check whether the argument is even a <code>String</code> using <code>RB_TYPE_P</code>; if it&rsquo;s not then we know that it can never be equal to the receiver, so we fail fast (returning False in this case).</p>
+<p>Macros are also provided for casting <code>RVALUE</code> pointers to known types, such as <code>RSTRING</code>, <code>RARRAY</code> etc. As well as the macro <code>RANY</code> which signifies that we don&rsquo;t care what type the <code>RVALUE</code> is, we just want to access struct members that are common to all.</p>
+<p>We&rsquo;ll use these a lot later on, but for now lets talk about Ruby organises the <code>RVALUE</code> structs.</p>
+<h2 id="how-objects-are-organised">How objects are organised</h2>
+<p>We now know that every Ruby object is represented internally as an instance of a C struct called an <code>RVALUE</code> and that we have easy ways of identifying from an <code>RVALUE</code> what object is being represented. So now we need to look at how these <code>RVALUE</code> objects are organised in memory.</p>
+<p>The abriged version is that Ruby stores <code>RVALUE</code> objects in a structure called a heap, and that the heap is divided into pages. We&rsquo;re going to look into this in a bit more detail and explore some of the implications of that and what that structure allows us to do.</p>
+<p>One thing to note is that when we&rsquo;re referring to heaps and heap pages the terminology changes slightly. We refer to heap pages as having &ldquo;slots&rdquo;, where each slot contains one <code>RVALUE</code>. An empty slot can be accessed in the same way as any other slot containing an <code>RVALUE</code>. The difference is that empty <code>RVALUE</code>&rsquo;s will have a <code>BUILTIN_TYPE</code> of <code>T_NONE</code>.</p>
+<h3 id="heap-pages">Heap pages</h3>
+<p>The first unit of organisation that we&rsquo;ll consider is the <code>struct heap_page</code>. A heap page is a container for a series of slots that are contiguous in memory. It contains accounting information about the number of slots in a page and how many are free, a reference to the starting slot in memory, some bitmasks that are used during the garbage collection process to tell whether an object is marked or pinned (more on this later).</p>
+<p>Heap pages are exactly 16Kb in size, so they can be aligned to multiples of the operating system page size, in order to use memory as efficiently as we can. Most OS pages are 4Kb, so each 16Kb Ruby heap page maps to 4 OS pages.</p>
+<p>Because each page is a fixed size, it can only contain a limited number of slots, this is calculated by subtracting some space for header information and dividing the size of the rest of the page by the size of an <code>RVALUE</code>, which it does in the following way.</p>
+<pre><code class="language-c=" data-lang="c=">HEAP_PAGE_OBJ_LIMIT = (unsigned int)(
+  (HEAP_PAGE_SIZE - sizeof(struct heap_page_header))/sizeof(struct RVALUE)
+)
+</code></pre><p>This gives us a limit of 409 slots per page.</p>
+<p>An interesting quirk of this is that due to memory alignment constraints, a heap page may not necessarily contain 409 slots, sometimes it&rsquo;ll contain 408.</p>
+<p>This happens because during the ruby page/os page allocation we may find ourselves with a starting address that doesn&rsquo;t evenly divide by the size of an <code>RVALUE</code>. In this case Ruby juggles the <code>page-&gt;start</code> pointer up a few bits so that its aligned. This causes the 409th slot to not fit on the page anymore so Ruby removes it. The code that does that is in <code>heap_page_allocate</code> in <code>gc.c</code> and it looks like this:</p>
+<pre><code class="language-c=" data-lang="c=">/* assign heap_page body (contains heap_page_header and RVALUEs) */
+page_body = (struct heap_page_body *)rb_aligned_malloc(HEAP_PAGE_ALIGN, HEAP_PAGE_SIZE);
+
+/* assign heap_page entry */
+page = calloc1(sizeof(struct heap_page));
+
+/* adjust obj_limit (object number available in this page) */
+start = (RVALUE*)((VALUE)page_body + sizeof(struct heap_page_header));
+if ((VALUE)start % sizeof(RVALUE) != 0) {
+    int delta = (int)(sizeof(RVALUE) - ((VALUE)start % sizeof(RVALUE)));
+    start = (RVALUE*)((VALUE)start + delta);
+    limit = (HEAP_PAGE_SIZE - (int)((VALUE)start - (VALUE)page_body))/(int)sizeof(RVALUE);
+}
+end = start + limit;
+
+</code></pre><p>In addition to the information above, each page also contains a pointer to the start of the freelist. The freelist is an important concept in Ruby memory management, it is a singly linked list of all the <code>T_NONE</code> slots within a page where all new <code>RVALUE</code>s get allocated.</p>
+<h3 id="the-freelist">The freelist</h3>
+<p><em><strong>NOTE:</strong> Some of this code has changed between the commit I was looking at when I wrote this and the latest trunk. Ractors, an actor-like concurrency framework was introduced in Ruby 3.0.0 - released Dec 25th 2020. This has resulted in heap pages and their freelists being cached in the context of a Ractor now. Without this exclusivity, having multiple Ractors allocate in a single freelist would have been a concurrency nightmare. I&rsquo;ll try and remember to write up something about the differences in a later post, I promise</em></p>
+<p>Earlier we mentioned that an empty slot is just an <code>RVALUE</code> of type <code>T_NONE</code>. Let&rsquo;s look a little closer at the implementation of the <code>RVALUE</code> struct, particularly the first entry in the <code>as</code> union:</p>
+<pre><code class="language-c=" data-lang="c=">typedef struct RVALUE {
+    union {
+        struct {
+            VALUE flags;		/* always 0 for freed obj */
+            struct RVALUE *next;
+        } free;
+        /* other types cut for brevity */
+    } as
+}
+</code></pre><p>The inline <code>struct free</code> is what allows us to build the freelist.</p>
+<p>Remember when we said that there was nothing stopping us from treating one member of a union like any other? Well this is where that behaviour is useful:</p>
+<p>When we free an object from a slot we can use a helper <code>RFREE</code> to treat our <code>RVALUE</code> as a <code>struct free</code>. This allows us to set the <code>flags</code> to <code>0</code> and the <code>next</code> pointer to the address of the next free slot in the page. The next time we need a slot in which to allocate an <code>RVALUE</code> we can just pop off the head of the freelist and write whatever we want into it.</p>
+<p>This means that finding space to assign our object is a constant time operation, and is always fast. Without this linked list, we&rsquo;d have to scan the whole heap page looking for a slot, which is a linear time operation: the time it takes would depend on where in the page the next free slot is.</p>
+<p>We can see this freelist manipulation happening in the functions <code>heap_page_add_freeobj</code> and <code>heap_get_freeobj</code> respectively.</p>
+<p>Removing some verification and memory protection code from these functions to highlight just the important parts for this discussion leaves us with:</p>
+<h3 id="heap_get_freeobj">heap_get_freeobj</h3>
+<pre><code class="language-c=" data-lang="c=">static inline VALUE
+heap_get_freeobj(rb_objspace_t *objspace, rb_heap_t *heap)
+{
+    RVALUE *p = heap-&gt;freelist;
+
+    while (1) {
+	    if (p != NULL) {
+	        heap-&gt;freelist = p-&gt;as.free.next;
+	        return (VALUE)p;
+	    } else {
+	        p = heap_get_freeobj_from_next_freepage(objspace, heap);
+	    }
+    }
+}
+</code></pre><p>This function is called during the new object allocation code path, we can see it grabs an <code>RVALUE</code> from the freelist, and returns it. Astute readers will notice that this function pulls an <code>RVALUE</code> from the freelist defined on the heap, rather than a heap page. The heap as a whole maintains a pointer to the freelist on the first heap page as well as a list of all the pages that have free slots, allowing us to walk the entire freelist for a heap easily.</p>
+<p>The other thing this code does once it&rsquo;s pulled a free slot from the freelist is to update the heap&rsquo;s freelist pointer to the next free slot.</p>
+<p>It does this by checking whether the free slot we&rsquo;re using has a next pointer defined, if so we can use that directly.</p>
+<p>If there is not next pointer defined then we may be at the end of the heap so we need to do some more work - <code>heap_get_freeobj_from_next_freepage</code> hides some complexity about what we do if there isn&rsquo;t any free space left, but hopefully the function name makes the intent obvious.</p>
+<h4 id="heap_page_add_freeobj">heap_page_add_freeobj</h4>
+<pre><code class="language-c=" data-lang="c=">static inline void
+heap_page_add_freeobj(rb_objspace_t *objspace, struct heap_page *page, VALUE obj)
+{
+    RVALUE *p = (RVALUE *)obj;
+
+    p-&gt;as.free.flags = 0;
+    p-&gt;as.free.next = page-&gt;freelist;
+    page-&gt;freelist = p;
+}
+</code></pre><p>This operation is much simpler. When we want to remove an <code>RVALUE</code> and add the slot back to the freelist, we have to blank out the <code>flags</code>, which makes Ruby treat this as a <code>T_NONE</code> rather than whatever type it was before, and then we add it to the front of the freelist by setting its <code>next</code> pointer to the current freelist head and setting the freelist head to this slot.</p>
+<p>Looking at these two operations we can see that whilst the freelist is implemented as a linked list, we&rsquo;re actually using it like a stack. We pop slots off the list to fill with data and then when we&rsquo;re done with the slot we add it back to the front of the list.</p>
+<h4 id="a-quirk-of-the-freelist-its-all-backwards">A quirk of the freelist: it&rsquo;s all backwards</h4>
+<p>When heap pages are built, first all the memory required is allocated and the slots are defined. Then the freelist is built:</p>
+<pre><code class="language-c=" data-lang="c=">for (p = start; p != end; p++) {
+	gc_report(3, objspace, &quot;assign_heap_page: %p is added to freelist\n&quot;, (void *)p);
+	heap_page_add_freeobj(objspace, page, (VALUE)p);
+}
+
+</code></pre><p>Looking at that loop it might not be immediately obvious, but we&rsquo;re walking up the page, from start to end and calling <code>heap_page_add_freeobj</code>; which we know adds the slot to the <em>front</em> of the freelist.</p>
+<p>This means that the first slot on the freelist is actually the last slot, contiguously, on the page. Walking <em>up</em> the freelist, by traversing <code>next</code> pointers, is actually walking down the page, by memory address.</p>
+<p>This doesn&rsquo;t really have much impact on the general functioning of the freelist, but it can cause some headaches if (like me), your work is very dependant on contiguous regions of memory.</p>
+<h3 id="the-heap-eden-and-tomb">The Heap; Eden and Tomb</h3>
+<p>The second organisational unit that we&rsquo;re going to look at is the <code>struct rb_heap_struct</code>, which is more commonly referred to by its <code>typedef</code>: <code>rb_heap_t</code>.</p>
+<p>Ruby maintains two heaps, the Eden heap and the Tomb heap, strucuturally they are both identical, but they are used in different ways.</p>
+<p>Each heap contains a list of pages that contain free slots, called <code>free_pages</code> and a pointer to the page that is currently being allocated into, called <code>using_page</code>, as well as an iterator of all pages that is used during the sweeping phase of garbage collection.</p>
+<p>Both Eden and Tomb heaps are initialised at the start of the Ruby interpreter bootup, using default parameters that can be overridden by the user.</p>
+<p>The code for that lives inside <code>gc.c</code> as part of the <code>Init_heap</code> function</p>
+<pre><code class="language-c=" data-lang="c=">void
+Init_heap(void)
+{
+    rb_objspace_t *objspace = &amp;rb_objspace;
+
+    /* ... snipped code that is irrelevant to us at this time ... */
+
+    heap_add_pages(objspace, heap_eden, gc_params.heap_init_slots / HEAP_PAGE_OBJ_LIMIT);
+
+    /* ... snipped code that is irrelevant to us at this time ... */
+}
+</code></pre><p><code>rb_objspace</code> is a global struct that is defined on VM initialisation and contains pointers to both of the heaps. It contains a lot of information about the garbage collection lifecycle of the running Ruby interpreter, as such we&rsquo;ll discuss it in more detail in a later post, but for now we just need to know that it contains two member fields <code>eden_heap</code> and <code>tomb_heap</code> that are instances of <code>rb_heap_t</code>.</p>
+<p>The call to <code>heap_add_pages</code> gives us some interesting information. Firstly that we only add pages to the <code>heap_eden</code> when we start the VM. Secondly that the number of pages we&rsquo;ll start with is configurable by tuning the parameter <code>gc_params.heap_init_slots</code>. This is exposed to the user as the environment variable <code>RUBY_GC_HEAP_INIT_SLOTS</code>.</p>
+<p>So, now that we know that Ruby prefills our <code>eden_heap</code> with a set number of empty pages when our interpreter starts, it should follow that the <code>eden_heap</code> is where all of our objects are allocated. So what is the <code>tomb_heap</code> used for?</p>
+<p>We&rsquo;ll cover this in more detail in a future post when we cover mark &amp; sweep garbage collection, but some relevant code for this lives inside the <code>gc_sweep_step</code> function:</p>
+<pre><code class="language-c=" data-lang="c=">if (sweep_page-&gt;final_slots + free_slots == sweep_page-&gt;total_slots &amp;&amp;
+    heap_pages_freeable_pages &gt; 0 &amp;&amp;
+    unlink_limit &gt; 0) {
+    heap_pages_freeable_pages--;
+    unlink_limit--;
+    /* there are no living objects -&gt; move this page to tomb heap */
+    heap_unlink_page(objspace, heap, sweep_page);
+    heap_add_page(objspace, heap_tomb, sweep_page);
+}
+</code></pre><p>Handwaving away some details for now - this code says that if the number of free slots on the page that we&rsquo;re currently sweeping is the same as the total number of slots on the page (ie. there are no live objects left on the page), then we remove the page from the Eden heap and move it into the Tomb heap.</p>
+<p>This contrasts nicely with the code in <code>heap_page_create</code>:</p>
+<pre><code class="language-c=" data-lang="c=">static struct heap_page *
+heap_page_create(rb_objspace_t *objspace)
+{
+    struct heap_page *page;
+    const char *method = &quot;recycle&quot;;
+
+    heap_allocatable_pages--;
+
+    page = heap_page_resurrect(objspace);
+
+    if (page == NULL) {
+	page = heap_page_allocate(objspace);
+	method = &quot;allocate&quot;;
+    }
+
+    return page;
+}
+</code></pre><p><code>heap_page_resurrect</code> removes a page from the tomb heap and returns it. So the tomb heap can be viewed as a memory efficiency optimisation. After the garbage collector runs, instead of freeing empty pages back to the operating system, we store them somewhere, and then the next time we run out of heap pages, we first check whether we have any dead pages stored that we can recycle, and we only ask the OS to allocate us more memory if we really need it.</p>
+<p>This storage space for dead pages is what the <code>tomb_heap</code> is used for.</p>
+<p>This is a slight simplification, as it doesn&rsquo;t take into account Ruby objects with finalizers (finalizers are a way of assigning code to run when an object is garbage collected), but for our purposes it&rsquo;s enough to know that finalizers exist, we&rsquo;ll discuss them in more detail in a future post.</p>
+<h2 id="summary-and-whats-next">Summary, and what&rsquo;s next</h2>
+<p>Let&rsquo;s summarise what we&rsquo;ve learned. We now know that all Ruby objects are fixed width C structs. They&rsquo;re organised into pages, and each page holds 409 objects.</p>
+<p>We know that when the Ruby interpreter boots up it allocates a large chunk of memory from the OS, which it divides into pages and groups these pages together in a heap.</p>
+<p>We also know that a mechanism exists whereby we can recycle used pages, saving them for later use without releasing them to the operating system, and that this allows us to be a bit more efficient with our memory usage and reduce the number of times we ask the OS for more memory.</p>
+<p>We know that the heap and its pages keep track of all the free slots in a freelist, which we can use to quickly find a place in which we can assign a new object. And we know that when an object is no longer needed Ruby will push that object back onto the freelist so we can use it again later.</p>
+<p>We haven&rsquo;t yet talked about when an object would be removed, and how that happens. In the next post we&rsquo;ll inroduce the idea of garbage collection. We&rsquo;ll talk about how Ruby determines Object liveness, how the two phases of the main Mark &amp; Sweep algorithm work together to remove objects that are no longer used and return their space back to the freelist. We&rsquo;ll also talk on the various ways that GC can be triggered, whether manually, or automatically during the lifetime of your programs.</p>
+<p>Lastly we&rsquo;ll talk about some of the limitations of Mark &amp; Sweep, the ways in which they can be mitigated against and introduce some of the concepts Ruby uses to do so, which we&rsquo;ll explore in the rest of this series.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p>I&rsquo;ll use &ldquo;Ruby&rdquo; a lot in this post. I know that there are many Rubies in the world and that I&rsquo;m only talking about one, and so the generic use of Ruby may be incorrect. But it&rsquo;s prudent to bear in mind that everything I talk about here applies specifically to the default Ruby Implementation, started by Matz, written in C and hosted on <a href="https://www.ruby-lang.org">https://www.ruby-lang.org</a>. Other implementations may do things differently. <a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</section>
+
+    </div>
+  </article>
+
+  
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with Hugo</a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+

@@ -6,7 +6,17 @@
     <description>Recent content on eightbitraptor</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-gb</language>
-    <lastBuildDate>Mon, 08 Mar 2021 13:36:59 +0000</lastBuildDate><atom:link href="https://www.eightbitraptor.com/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 23 Mar 2021 22:04:13 +0000</lastBuildDate><atom:link href="https://www.eightbitraptor.com/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>GC in Ruby: Part 1, An overview of memory layout</title>
+      <link>https://www.eightbitraptor.com/2021/03/23/gc-in-ruby-part-1-an-overview-of-memory-layout/</link>
+      <pubDate>Tue, 23 Mar 2021 22:04:13 +0000</pubDate>
+      
+      <guid>https://www.eightbitraptor.com/2021/03/23/gc-in-ruby-part-1-an-overview-of-memory-layout/</guid>
+      <description>Introduction (and raison d&amp;rsquo;être) My working life is currently spent working on the internals of Matz&amp;rsquo;s Ruby Interpreter(MRI) as part of the Ruby Infrastructure team at Shopify.
+I am pretty new to this kind of work. I&amp;rsquo;ve been a Ruby developer for a long time, but when I moved to this team in June 2020 I had no professional experience writing C, and had never seen the inside of a programming language interpreter before.</description>
+    </item>
+    
     <item>
       <title>Weeknote 2021.09: Elaborately carved metals</title>
       <link>https://www.eightbitraptor.com/2021/03/08/weeknote-2021.09-elaborately-carved-metals/</link>
