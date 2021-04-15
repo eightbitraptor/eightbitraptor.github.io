@@ -3,7 +3,10 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://www.eightbitraptor.com/</loc>
-    <lastmod>2021-03-23T22:04:13+00:00</lastmod>
+    <lastmod>2021-04-15T15:30:38+01:00</lastmod>
+  </url><url>
+    <loc>https://www.eightbitraptor.com/2021/04/15/gc-in-ruby-part-2-a-what-is-gc-mark-sweep-and-how-ruby-marks-objects/</loc>
+    <lastmod>2021-04-15T15:30:38+01:00</lastmod>
   </url><url>
     <loc>https://www.eightbitraptor.com/2021/03/23/gc-in-ruby-part-1-an-overview-of-memory-layout/</loc>
     <lastmod>2021-03-23T22:04:13+00:00</lastmod>

@@ -35,10 +35,6 @@ img {
   height: auto;
 }
 
-pre {
-  padding: 2rem;
-}
-
 .wrapper {
   overflow: hidden;
   position: relative;
@@ -188,13 +184,18 @@ pre {
 
 .highlight {
   border-radius: 3px;
-  position: relative;
   margin: 40px 0;
+  position: relative;
   font-size: 14px;
 }
 
 .highlight pre {
   padding: 10px;
+  display: block;
+  border-radius: 3px;
+  position: relative;
+  margin-left: 20px;
+  max-width: 900px;
 }
 
 .archive {

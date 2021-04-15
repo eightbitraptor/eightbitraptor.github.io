@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.82.0" />
+
+
+<title>GC in Ruby: Part 2 (a), What is GC, Mark &amp; Sweep, and how Ruby marks objects - eightbitraptor</title>
+<meta property="og:title" content="GC in Ruby: Part 2 (a), What is GC, Mark &amp; Sweep, and how Ruby marks objects - eightbitraptor">
+
+
+  <link href='https://www.eightbitraptor.com/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+<link rel="icon" href="https://www.eightbitraptor.com/images/favicon.ico" type="image/x-icon"/>
+<link rel="stylesheet" href="https://www.eightbitraptor.com/css/main.css" media="all">
+<link rel="stylesheet" href="https://www.eightbitraptor.com/css/lastfm.css" media="all">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Merriweather:400|Lato:400,400italic,700">
+<script src="https://www.eightbitraptor.com/js/lastfm.js"></script>
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="https://www.eightbitraptor.com/" class="nav-logo">
+    <img src="https://www.eightbitraptor.com/images/avatar.png"
+         width="100"
+         height="100"
+         alt="eightbitraptor.com">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://www.github.com/eightbitraptor">GitHub</a></li>
+    
+    <li><a href="https://wiki.eightbitraptor.com">Wiki</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">24 min read</span>
+    
+
+    <h1 class="article-title">GC in Ruby: Part 2 (a), What is GC, Mark &amp; Sweep, and how Ruby marks objects</h1>
+
+    
+    <span class="article-date">April 15, 2021</span>
+    
+
+    <div class="article-content">
+      <p>GC in Ruby: Part 2a, GC basics and the Mark &amp; Sweep algorithm</p>
+<h2 id="introduction">Introduction</h2>
+<p>I&rsquo;m assuming that a huge proportion of the folks reading this post are programming with languages that implement automatic dynamic memory management. Ruby, Python, Go, JavaScript, Haskell, Swift, Lisp, Dart, and of course anything based on the .NET CLR or the JVM are all languages that manage memory automatically.</p>
+<p>It&rsquo;s highly likely that, if you&rsquo;ve never had to explicitly call <code>malloc</code> or a related API, then you&rsquo;re working in a language with automatic dynamic memory management<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></p>
+<p>Memory management generally consists of two main concerns. How memory is claimed from the Operating System for the program to use, and how it is returned to the Operating System when it&rsquo;s no longer needed.</p>
+<p>In languages with manual memory management, you&rsquo;d typically ask for memory using one of the <code>malloc</code> functions and then give it back when when you&rsquo;re finished with it with <code>free</code> (except Rust, which takes a completely different approach to memory management).</p>
+<p>In languages with automatic memory management the language runtime or compiler takes care of claiming memory using an allocator, and releasing this memory using a garbage collector.</p>
+<p>In this post we&rsquo;re going to look at some basics of garbage collection. We&rsquo;ll talk about some of the terminology that&rsquo;s used in this subject area, and then we&rsquo;re going to look at the specifics of the Mark &amp; Sweep algorithm, which is one of the simpler GC<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> algorithms.</p>
+<p>We&rsquo;ll then look at how Ruby implements the initial phase of Mark &amp; Sweep: object marking<sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup>. Because the GC story in Ruby has a lot of layers these days - Incremental marking and sweeping, a generational collector that partitions objects by age, and a memory compactor that runs in tandem with GC - we&rsquo;re occasionally going to see parts of the code that don&rsquo;t make sense yet. I&rsquo;ll go through a lot of these in future posts, and will always try and call out the stuff that isn&rsquo;t relevant to the current discussion.</p>
+<p>I had intended to speak about both marking and sweeping in this post, but when I started writing I realised how much there is to cover, so I&rsquo;ve chosen to cover sweeing in a separate post.</p>
+<p>Most of the things I&rsquo;ve learned about GC have come from 2 main places. The first is working on the Ruby source code and pairing with my supremely talented colleagues. The second is a book called <a href="https://gchandbook.org/">The Garbage Collection Handbook, The Art of Automatic Memory Management</a>, written by Richard Jones, Antony Hosking and Eliot Moss and published by CRC Press.</p>
+<p>This book is fantastic and I recommend it whole-heartedly if GC implementations are something that you&rsquo;d like to learn more about. And without further ado, let&rsquo;s jump in!</p>
+<h2 id="terminology">Terminology</h2>
+<p>There are a few concepts that are used extensively throughout GC literature. Before we can start discussing algorithms we&rsquo;re going to need to know how to refer to these concepts.</p>
+<h3 id="the-heap">The heap</h3>
+<p>The heap is where all of our automatic memory management occurs. Objects are allocated out of the heap, live on the heap and the memory is made available on the heap again when they are garbage collected.</p>
+<p>It can either be a single contiguous region of memory, or it can be a set of many contiguous regions of memory (often referred to as pages). Which approach is taken will be dependant on the implementation. We&rsquo;ve already seen in our previous post that Ruby uses the second approach: It allocates from heap pages within the eden heap.</p>
+<h3 id="granules-and-objects">Granules and Objects.</h3>
+<p>A <strong>granule</strong> is the smallest amount of memory we can allocate in our automatic system.</p>
+<p>An <strong>object</strong> is a contiguous region of 1 or more granules that is allocated for use by the application. Objects contain fields which may either contain data, or references to other objects in the system.</p>
+<p>In Ruby, the smallest amount of memory we can allocate on the GC heap is the size of a slot, which is 40 bytes, as every slot contains a single <code>RVALUE</code>. This means that our granule is a 40 byte section of memory.</p>
+<p>An object in our implementation, is represented by an <code>RVALUE</code>. This is the common type for all Ruby objects and consists of a header, along with a set of fields that may or may not refer to other objects.</p>
+<p>In the current implementations of Ruby we can only allocate one <code>RVALUE</code> at a time. This means that an object is always exactly one granule, although this will hopfully change in the future as I&rsquo;m working on introducing variable length objects to Ruby. I&rsquo;ll write more about this in a future post.</p>
+<h3 id="the-mutator-and-the-collector">The mutator and the collector</h3>
+<p>These are the two main parts of any garbage collected program. The <strong>mutator</strong> is the thread (or threads) that execute application code. This part of the system also contains the part of the memory management system that allocates objects, as well as mutate objects and their references.</p>
+<p>The <strong>collector</strong> is the thread (or threads) that execute code related to garbage collection. That is, it follows all the object references in the system to discover objects that are no longer being used by the system and reclaims their storage space, so that the mutator can re-use that memory in order to create new objects.</p>
+<p>All of the mutator and collector threads operate over the same heap.</p>
+<h3 id="references-and-fields">References and Fields</h3>
+<p>Objects can contain references to other objects. Consider the following Ruby code:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Foo</span>
+  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">initialize</span>(name)
+    @name <span style="color:#f92672">=</span> name
+  <span style="color:#66d9ef">end</span>
+<span style="color:#66d9ef">end</span>
+
+<span style="color:#66d9ef">Foo</span><span style="color:#f92672">.</span>new(<span style="color:#e6db74">&#34;Matthew&#34;</span>)
+</code></pre></div><p>This code is going to heap allocate a few <code>RVALUE</code> objects; among them a <code>T_CLASS</code> representing the class <code>Foo</code>, a <code>T_OBJECT</code> for the instance of the class <code>Foo</code>, and a <code>T_STRING</code> that contains the string &ldquo;Matthew&rdquo;.</p>
+<p>To keep our program consistent we need our programming language to keep track of some relationships between these things: like our <code>@name</code> instance variable, which is itself an <code>RVALUE</code>, and is being used by the <code>T_OBJECT</code> which is our instance of <code>Foo</code>.</p>
+<p>Obviously it would be bad if the String object was garbage collected and it&rsquo;s memory reused while the Object referencing it was still live!</p>
+<p>But this small example also allocates other objects, that our class references: Every <code>RVALUE</code> struct has a <strong>field</strong> named <code>class</code> that contains a pointer to its class object, which in turn has a class field pointing to its class, all the way back up to <code>BasicObject</code>. These are in addition to the specific references each type of object can hold.</p>
+<p>As we can see, these relationship graphs build up quickly, even in trivial programs. It&rsquo;s these relationships that we mean when we talk about references.</p>
+<p>A <strong>reference</strong> is a field of an object that contains a pointer to another object on the heap.</p>
+<p>A pointer is a term meaning the memory address of another object. Ruby uses a type called <code>VALUE</code> to store it&rsquo;s object pointers, and they always point to the starting address of an <code>RVALUE</code> on the heap.</p>
+<p>The GC Handbook defines this more formally:</p>
+<pre><code class="language-=" data-lang="=">Pointers(N) = { a | a = &amp;N[i]; ∀i: 0 ≤ i &lt; |N| where N[i] is a pointer}
+</code></pre><p>This is a statement, written in Set notation, that tells us how to define the set of references for an object. It says:</p>
+<p>For an object <code>N</code>: The set of addresses that are the pointer fields of <code>N</code> are all the addresses to fields that are contained in the field list of <code>N</code> where the contents of the field is a pointer.</p>
+<p>Or, more basically: references are the fields of an object that are pointers to other objects.</p>
+<h3 id="mutator-roots-and-the-root-object-set">Mutator Roots and the Root object set</h3>
+<p><strong>Mutator roots</strong> are the pointers to objects in the heap that are directly accessible to the mutator threads, without having to traverse any intermediate objects. We call the set of ojects accessible via the mutator roots the <strong>Root objects</strong>.</p>
+<p>These mutator roots are usually thread local storage, such as execution stacks, or global variables. These will all contain references to other objects.</p>
+<p>It&rsquo;s not possible in a type safe language to find an unreachable object in the heap by traversing the graph starting at the mutator roots. Once all pointers to that object have been discarded, it&rsquo;s gone, and arithmetic pointer construction is prohibited.</p>
+<h3 id="liveness-correctness-and-reachability">Liveness, correctness and reachability.</h3>
+<ul>
+<li>
+<p>A garbage collector is only <strong>correct</strong> if it never reclaims live objects.</p>
+</li>
+<li>
+<p>An object is <strong>live</strong> if it will be accessed at some time in the future execution of the mutator.</p>
+</li>
+</ul>
+<p>Unfortunately for us, liveness is an <a href="https://www.khanacademy.org/computing/ap-computer-science-principles/algorithms-101/solving-hard-problems/a/undecidable-problems">undecidable problem</a>. We can never accurately know for an arbitrary heap object whether or not the program will ever access it.</p>
+<p>This is where <strong>reachability</strong> comes in: We use an objects reachability as a way of determining an objects approximate liveness. An object <code>M</code> is reachable from object <code>N</code> only if object <code>M</code> can be discovered by following a chain of pointers from a field on object <code>N</code>.</p>
+<p>So if an object is reachable from one of the mutator roots, then that the object may be accessed at some point during the programs life and is therefore considered to be a live object. If an object cannot be reached then it can never be accessed again and is dead.</p>
+<p>This conservating approach to liveness is not perfect, but it is reasonable. We may find that we mark dead objects as live because they are reachable (even though we never access them again). But importantly the reverse cannot happen - we&rsquo;ll never mark live objects as dead, because we assume everything that <em>could</em> be live <em>is</em> live.</p>
+<p>Garbage collection algorithms that use reachability as an indicator of liveness, like Mark &amp; Sweep are known as tracing garbage collectors, and are the most common type of GC algorithm.</p>
+<h2 id="mark--sweep-garbage-collection">Mark &amp; Sweep Garbage collection</h2>
+<p>Now that we&rsquo;ve introduced the subject of garbage collection, and we&rsquo;re familiar with some of the terms it&rsquo;s time to introduce our first algorithm: Mark &amp; Sweep.</p>
+<p>To make talking about this algorithm simpler we&rsquo;re going to make a few assumptions about the operation of the system:</p>
+<ul>
+<li>There may be more than one mutator thread, but there is only ever one collector thread</li>
+<li>All mutator threads are stopped while the collector thread runs. There is no modificiations to the heap being made during collection other than the ones that the collector is making.</li>
+<li>Collection appears to be atomic. That is, the mutator threads will never see an intermediate state of the collector, or an intermediate state of the heap.</li>
+</ul>
+<p>These assumptions are convenient not only because they avoid us having to deal with any hard concurrency problems, but also because it&rsquo;s the way that GC in Ruby is implemented. So a definite win for us.</p>
+<p>Mark &amp; Sweep is an algorithm invented in 1960 by James McCarthy, originally for Lisp. It&rsquo;s a two phase algorithm. The first phase: Marking, involves traversing all reachable objects from the mutator roots, and recording somewhere that every object we come across is live.</p>
+<p>The second phase: Sweeping, involves walking the heap, examining the mark status for every object in the heap. Any object that is unmarked is dead, and it&rsquo;s space is reclaimed.</p>
+<h3 id="triggering-mark--sweep-gc">Triggering Mark &amp; Sweep GC</h3>
+<p>From the point of view of the collector, the mutator threads only do three jobs: <code>New</code>, <code>Read</code> and <code>Write</code>. These are the hooks into the program that the collector needs to reimplement in order to integrate itself with the program. <code>New</code> allocates a new heap object and returns an address to it, <code>Read</code> accesses an object field in memory and returns its value, and <code>Write</code> modifies an object in memory.</p>
+<p>Mark &amp; sweep doesn&rsquo;t rely on information stored in the objects themselves in order to collect garbage, it relies on object reachability, so there&rsquo;s no need for us to implement our own implementations for <code>Read</code> or <code>Write</code>.</p>
+<p>Instead the Mark &amp; Sweep collector interfaces with the mutators during object allocation. If a thread tries to allocate an object and there is no space left on the heap, then collection runs and the allocation is retried. If the allocation fails again, we are therefore out of memory and the program terminates.</p>
+<p>In Ruby, this could look something like the following:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">new_object</span>
+  ref <span style="color:#f92672">=</span> heap<span style="color:#f92672">.</span>allocate
+  
+  <span style="color:#66d9ef">if</span> ref<span style="color:#f92672">.</span>nil?
+    collect
+    
+    ref <span style="color:#f92672">=</span> heap<span style="color:#f92672">.</span>allocate
+    <span style="color:#66d9ef">if</span> ref<span style="color:#f92672">.</span>nil?
+      fail <span style="color:#e6db74">&#34;Out of Memory&#34;</span>
+    <span style="color:#66d9ef">end</span>
+  <span style="color:#66d9ef">end</span>
+
+  ref
+<span style="color:#66d9ef">end</span>
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">collect</span>
+  with_mutator_lock <span style="color:#66d9ef">do</span>
+    mark_from_roots
+    sweep
+  <span style="color:#66d9ef">end</span>
+<span style="color:#66d9ef">end</span>
+</code></pre></div><p>Looking at this code we can see that there are two main paths through the object allocation method. The first is nice and quick - we request an reference from the allocator, which immediately allocates us an object and returns it. The second is much less efficient - because the first allocation fails so now we have to stop the world and run GC before we can try again.</p>
+<p>Ruby uses an algorithm similar to this internally, but there are some differences - arising mainly because the heap is divided up into separate pages.</p>
+<p>We can see the basic shape of Ruby&rsquo;s implementation of this <code>New</code> GC hook in action by looking at the function <code>newobj_of0</code> in <code>gc.c</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> VALUE
+<span style="color:#a6e22e">newobj_of0</span>(VALUE klass, VALUE flags, <span style="color:#66d9ef">int</span> wb_protected, rb_ractor_t <span style="color:#f92672">*</span>cr)
+{
+    <span style="color:#66d9ef">if</span> (obj <span style="color:#f92672">=</span> ractor_cached_freeobj(objspace, cr)) <span style="color:#f92672">!=</span> Qfalse) {
+        newobj_init(klass, flags, wb_protected, objspace, obj);
+    }
+    <span style="color:#66d9ef">else</span> {
+        obj <span style="color:#f92672">=</span> wb_protected <span style="color:#f92672">?</span>
+          newobj_slowpath_wb_protected(klass, flags, objspace, cr) <span style="color:#f92672">:</span>
+          newobj_slowpath_wb_unprotected(klass, flags, objspace, cr);
+    }
+
+    <span style="color:#66d9ef">return</span> obj;
+}
+</code></pre></div><p>I&rsquo;ve removed some parts of the function in order to better expose the basic algorithm, which we can see is almost the same as the <code>new_object</code> method in my psuedo Ruby example above.</p>
+<p>The test expression for the conditional combines the allocate call with the check to see whether the allocation was successfull, and if it was, we can then assign data into the slot using <code>newobj_init</code>.</p>
+<p>The call to <code>ractor_cached_freeobj</code> is the equivalent to our call to <code>allocate</code>. Ruby&rsquo;s Ractors<sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup> cache a heap page, and reserve it for exclusive use by that Ractor in order to avoid data races and other concurrency related issues. But essentially this function is pulling a slot from the freelist of a heap page and returning it&rsquo;s address (as a <code>VALUE</code> pointer).</p>
+<p><em>Note that, even when we&rsquo;re not explicitly using Ractors in our code behind the scenes, there is always one ractor - which Ruby refers to as the main Ractor. You can dig deeper into this by looking at the macro <code>GET_RACTOR</code> and the ractor struct <code>ruby_single_main_ractor</code>).</em></p>
+<p>If the object was not allocated successfully (ie. the call to <code>ractor_cached_freeobj</code> returns <code>Qfalse</code>), then we follow the slowpath.</p>
+<p>We&rsquo;ll discuss what it means for an object to be write-barrier protected or unprotected in a later post about Generational GC, but for this discussion they&rsquo;re not relevent. Both of these funtions eventually lead us to <code>newobj_slowpath</code> which is where the second path of our <code>New</code> job is implemented:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">while</span> ((obj <span style="color:#f92672">=</span> ractor_cached_freeobj(objspace, cr)) <span style="color:#f92672">==</span> Qfalse) {
+    ractor_cache_slots(objspace, cr);
+}
+GC_ASSERT(obj <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>);
+newobj_init(klass, flags, wb_protected, objspace, obj);
+</code></pre></div><p>There&rsquo;s a bit of indirection here - We&rsquo;re going to need to follow the rabbit hole a little deeper before we find out whether we actually need to run GC.</p>
+<p>In our first variation from our naive <code>New</code> implementation we actually attempt the allocation again multiple times instead of just once, by calling <code>ractor_cached_freeobj</code> and <code>ractor_cache_slots</code> in a loop until we get a free slot back successfully.</p>
+<p>The job of <code>ractor_cache_slots</code> is to find the next page in the heap that has free slots and cache it onto the ractor.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">ractor_cache_slots</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace, rb_ractor_t <span style="color:#f92672">*</span>cr)
+{
+   ASSERT_vm_locking();
+   GC_ASSERT(cr<span style="color:#f92672">-&gt;</span>newobj_cache.freelist <span style="color:#f92672">==</span> NULL);
+
+   <span style="color:#66d9ef">struct</span> heap_page <span style="color:#f92672">*</span>page <span style="color:#f92672">=</span> heap_next_freepage(objspace, heap_eden);
+
+   cr<span style="color:#f92672">-&gt;</span>newobj_cache.using_page <span style="color:#f92672">=</span> page;
+   cr<span style="color:#f92672">-&gt;</span>newobj_cache.freelist <span style="color:#f92672">=</span> page<span style="color:#f92672">-&gt;</span>freelist;
+   page<span style="color:#f92672">-&gt;</span>free_slots <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+   page<span style="color:#f92672">-&gt;</span>freelist <span style="color:#f92672">=</span> NULL;
+}
+</code></pre></div><p>The actual caching isn&rsquo;t that interesting, it&rsquo;s just modifying some pointers in a linked list, but <code>heap_next_freepage</code> looks important. This function returns the next page on the heap that contains free slots, and when there are no free pages left - then we start GC to reclaim space. We can see the actual call to <code>gc_start</code> here, buried inside the test expression for the last conditional in <code>heap_prepare</code> in <code>gc.c</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">heap_prepare(rb_objspace_t <span style="color:#f92672">*</span>objspace, rb_heap_t <span style="color:#f92672">*</span>heap)
+{
+    GC_ASSERT(heap<span style="color:#f92672">-&gt;</span>free_pages <span style="color:#f92672">==</span> NULL);
+
+    <span style="color:#75715e">// spoiler alert
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (is_lazy_sweeping(heap)) {
+	    gc_sweep_continue(objspace, heap);
+    }
+    <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (is_incremental_marking(objspace)) {
+    	gc_marks_continue(objspace, heap);
+    }
+
+    <span style="color:#66d9ef">if</span> (heap<span style="color:#f92672">-&gt;</span>free_pages <span style="color:#f92672">==</span> NULL <span style="color:#f92672">&amp;&amp;</span>
+        (will_be_incremental_marking(objspace) <span style="color:#f92672">||</span> heap_increment(objspace, heap) <span style="color:#f92672">==</span> FALSE) <span style="color:#f92672">&amp;&amp;</span>
+        gc_start(objspace, GPR_FLAG_NEWOBJ) <span style="color:#f92672">==</span> FALSE) {
+        rb_memerror();
+    }
+}
+</code></pre></div><p><em>Side rant: There&rsquo;s a pattern here I see a lot in the MRI codebase and I don&rsquo;t like it. the actual important work is being done in a really long and complext test expression of an if statement, and the body of the conditional just raises an error. I feels like it&rsquo;s obfuscating the most important part of the function, which is that we should start GC when there are no free pages. C developers: <a href="https://twitter.com/eightbitraptor">tell me why I&rsquo;m wrong!</a></em></p>
+<p>Now that we&rsquo;ve found the actual call to <code>gc_start</code> we can step back through our algorithm and try and write it out in psuedo-Ruby, to compare with our generic Mark &amp; Sweep <code>New</code> implementation to see what changes Ruby is making to compensate for the division of the heap into pages.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">new_object</span>
+  ref <span style="color:#f92672">=</span> current_page<span style="color:#f92672">.</span>allocate
+
+  <span style="color:#66d9ef">if</span> ref<span style="color:#f92672">.</span>nil?
+    <span style="color:#66d9ef">until</span> ref <span style="color:#f92672">=</span> current_page<span style="color:#f92672">.</span>allocate
+      <span style="color:#66d9ef">if</span> free_pages<span style="color:#f92672">.</span>empty?
+        collect
+
+        <span style="color:#66d9ef">if</span> free_pages<span style="color:#f92672">.</span>empty?
+          fail <span style="color:#e6db74">&#34;Out of Memory&#34;</span>
+        <span style="color:#66d9ef">end</span>
+      <span style="color:#66d9ef">end</span>
+      current_page <span style="color:#f92672">=</span> free_pages<span style="color:#f92672">.</span>next
+    <span style="color:#66d9ef">end</span>
+  <span style="color:#66d9ef">end</span>
+
+  ref
+<span style="color:#66d9ef">end</span>
+</code></pre></div><p>We can still see the differentiation between the fast path and the slow path but there are definitely a few more steps in there. I&rsquo;ve also completely ignored what happens when the collector runs but cannot free up enough memory (it definitly does not just fail the first time we run out of free pages). But I want to focus on garbage collection rather than allocation. So for now we&rsquo;ll skip over that and move onto the first phase of the Mark &amp; Sweep algorithm:</p>
+<h2 id="the-mark-step">The Mark step</h2>
+<p>We said earlier that the mark phase was the process by which we walk the graph of reachable objects, starting at the mutator roots, and set some flag somewhere for every live object we come across.</p>
+<p>The actual marking algorithm isn&rsquo;t too complex. First we find the root objects, mark them and add them to a worklist. Then, until the worklist is empty, we pop an object off and traverse it&rsquo;s set of pointers, marking and adding the object at the end of each reference to the worklist.</p>
+<p>Because this worklist is used like a stack (ie. last in, first out) of marked objects, it&rsquo;s often referred to as the mark stack.</p>
+<p>An example of this would look like:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">mark_roots</span>
+  @worklist <span style="color:#f92672">=</span> <span style="color:#f92672">[]</span>
+
+  roots<span style="color:#f92672">.</span>each <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>root<span style="color:#f92672">|</span>
+    mark_object(root)
+    @worklist <span style="color:#f92672">&lt;&lt;</span> root
+  <span style="color:#66d9ef">end</span>
+<span style="color:#66d9ef">end</span>
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">process_mark_stack</span>
+  <span style="color:#66d9ef">until</span> @worklist<span style="color:#f92672">.</span>empty <span style="color:#66d9ef">do</span>
+    object <span style="color:#f92672">=</span> @worklist<span style="color:#f92672">.</span>pop
+
+    object<span style="color:#f92672">.</span>pointers<span style="color:#f92672">.</span>each <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>pointer<span style="color:#f92672">|</span>
+      child <span style="color:#f92672">=</span> dereference(pointer)
+
+      <span style="color:#66d9ef">if</span> child<span style="color:#f92672">&amp;.</span>marked?
+        mark_object(child)
+        @worklist <span style="color:#f92672">&lt;&lt;</span> child
+      <span style="color:#66d9ef">end</span>
+    <span style="color:#66d9ef">end</span>
+  <span style="color:#66d9ef">end</span>
+<span style="color:#66d9ef">end</span>
+
+mark_roots
+process_mark_stack
+</code></pre></div><h3 id="the-tricolour-abstraction">the tricolour abstraction</h3>
+<p>Because it&rsquo;s useful to be able to refer to the different states an object can be in during the collection phase we can identify these states and give them names. The tricolour abstraction comes from a paper by Djikstra et al from 1976 and proposes:</p>
+<ul>
+<li>Objects that are possibly dead are white. Initially this is every object, these objects are not marked, not on the worklist and are not currently being processed.</li>
+<li>When a white node is encountered during the marking phase it is coloured grey, this means the object is on the worklist or currently being processed.</li>
+<li>When a grey node has been fully processed and it&rsquo;s children identified then it is coloured black. Black objects are marked and are no longer being processed or on the worklist.</li>
+</ul>
+<p>Of course, we don&rsquo;t <em>actually</em> colour our objects, but this abstraction gives us some new ways of thinking about how we traverse the heap.</p>
+<p>Marking looks like a wave of grey objects moving through the heap, with all white objects ahead of the wave and all black objects behind. Eventually when marking has finished, there will be no grey objects left, all reachable objects will be black.</p>
+<p>One property of this algorithm that is always true is that there are never any references from black to white objects, and therefore, any white object left at the end of the mark step is unreachable and can be collected.</p>
+<h3 id="marking-in-ruby">Marking in Ruby</h3>
+<p>The mark step in Ruby gets started from a function called <code>gc_marks</code> which is called at the end of <code>gc_start</code>. <code>gc_start</code> actually does a load of work before it starts the mark step, in order to set up the conditions necessary for the GC to run, and to determine what kind of GC is running, but none of this is relevant to the discussion of simple Mark &amp; Sweep.</p>
+<p>For now the only interesting work that <code>gc_start</code> does is to call <code>gc_enter</code> which stops all other Ractors and mutator threads and claims a VM lock, so that nothing can happen while the collector is running. This is the stop-the-world part of the process. It does this before calling <code>gc_marks</code></p>
+<p><code>gc_marks</code> splits the mark phase into two. <code>gc_marks_start</code> and <code>gc_marks_rest</code>. This split is an artifact of incremental marking which we&rsquo;ll talk about in a future post, but for now all we need to know is that <code>gc_marks_start</code> is where the roots are marked and added to the mark stack and <code>gc_marks_rest</code> is what processes the mark list, popping objects off and marking their children.</p>
+<h4 id="marking-the-roots">Marking the roots</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">gc_mark_roots</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>categoryp)
+{
+    <span style="color:#66d9ef">struct</span> gc_list <span style="color:#f92672">*</span>list;
+    rb_execution_context_t <span style="color:#f92672">*</span>ec <span style="color:#f92672">=</span> GET_EC();
+    rb_vm_t <span style="color:#f92672">*</span>vm <span style="color:#f92672">=</span> rb_ec_vm_ptr(ec);
+    objspace<span style="color:#f92672">-&gt;</span>rgengc.parent_object <span style="color:#f92672">=</span> Qfalse;
+
+    rb_vm_mark(vm);
+    <span style="color:#66d9ef">if</span> (vm<span style="color:#f92672">-&gt;</span>self) 
+        gc_mark(objspace, vm<span style="color:#f92672">-&gt;</span>self);
+
+    mark_finalizer_tbl(objspace, finalizer_table);
+    mark_current_machine_context(objspace, ec);
+
+    <span style="color:#66d9ef">for</span> (list <span style="color:#f92672">=</span> global_list; list; list <span style="color:#f92672">=</span> list<span style="color:#f92672">-&gt;</span>next) {
+        gc_mark_maybe(objspace, <span style="color:#f92672">*</span>list<span style="color:#f92672">-&gt;</span>varptr);
+    }
+
+    rb_mark_end_proc();
+    rb_gc_mark_global_tbl();
+    rb_gc_mark(objspace<span style="color:#f92672">-&gt;</span>next_object_id);
+    mark_tbl_no_pin(objspace, objspace<span style="color:#f92672">-&gt;</span>obj_to_id_tbl);
+
+    <span style="color:#66d9ef">if</span> (stress_to_class)
+        rb_gc_mark(stress_to_class);
+}
+</code></pre></div><p>Above is an abridged version of the <code>gc_mark_roots</code> function. I&rsquo;ve removed all the debug and logging related code, to expose the actual marking code more clearly. From this we can identify exactly what Ruby considers Root objects.</p>
+<p>We can see that the root object set contains the Ruby virtual machine itself, as well as any reference directly attached to the VM, this includes all the individual Ractors, the Ruby load path, as well as all the global call cache tables and their contents.</p>
+<p>The global variable table itself, and the list of globals are also considered roots, as well as the finalizer table (finalizers are blocks of code, attached to an object, that are run when that object is garbage collected), and the current VM context object.</p>
+<p>There are a bunch of interesting functions here: <code>gc_mark</code>, <code>gc_mark_maybe</code>, <code>mark_tbl_no_pin</code> that all deal with actually marking various types of objects, in various states. All of them, when you follow the path down, eventually lead to <code>gc_mark_ptr</code> which is where the core marking logic really starts.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">gc_mark_ptr</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace, VALUE obj)
+{
+    <span style="color:#66d9ef">if</span> (LIKELY(during_gc)) {
+	    rgengc_check_relation(objspace, obj);
+	    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>gc_mark_set(objspace, obj)) <span style="color:#66d9ef">return</span>; <span style="color:#75715e">/* already marked */</span>
+
+      <span style="color:#66d9ef">if</span> (UNLIKELY(RB_TYPE_P(obj, T_NONE))) {
+          rp(obj);
+          rb_bug(<span style="color:#e6db74">&#34;try to mark T_NONE object&#34;</span>); <span style="color:#75715e">/* check here will help debugging */</span>
+      }
+	    gc_aging(objspace, obj);
+	    gc_grey(objspace, obj);
+    }
+    <span style="color:#66d9ef">else</span> {
+        reachable_objects_from_callback(obj);
+    }
+}
+</code></pre></div><p>We&rsquo;ll talk more about checking relations and <code>gc_aging</code> in a later post when we talk about the generational garbage collector.</p>
+<p>There are 2 interesting parts to this function. the first is the slightly misleading line here:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>gc_mark_set(objspace, obj)) <span style="color:#66d9ef">return</span> <span style="color:#75715e">/* already marked */</span>
+</code></pre></div><p>See my earlier side note about burying side effect laden code inside conditional tests - This line is what actually does the marking.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">int</span>
+<span style="color:#a6e22e">gc_mark_set</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace, VALUE obj)
+{
+    ASSERT_vm_locking();
+    <span style="color:#66d9ef">if</span> (RVALUE_MARKED(obj)) <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+    MARK_IN_BITMAP(GET_HEAP_MARK_BITS(obj), obj);
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+}
+</code></pre></div><p>Here we can see we first make sure that the VM is locked, ie. we&rsquo;ve stopped the world so that nothing happens to our heap while we&rsquo;re collecting. Then if the object is already marked we return false, otherwise we actually mark the object and return true.</p>
+<p>Objects are marked not by setting a flag on the object itself, but by marking them in a seperate table. In Ruby&rsquo;s case, each heap page has a data structure called the <code>mark_bits</code> that is an array of bits, with each bit corresponding to a slot in the heap.</p>
+<p>The slot is marked if its mark bit is <code>1</code> and not if its mark bit is <code>0</code>. In the GC Handbook, this is known as bitmap marking. It has a few benefits: It doesn&rsquo;t mutate objects in the heap during GC. It also allows the marking information to be stored densely. This can have speed gains when sweeping as we can keep more marking information in a single CPU cache line.</p>
+<p>Moving back to <code>gc_mark_ptr</code>, once we get past the sanity checking code we can see the call to <code>gc_grey</code>! This is the part of the process where we start to recognise terminology from what we know so far about mark &amp; sweep!</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">gc_grey(rb_objspace_t <span style="color:#f92672">*</span>objspace, VALUE obj)
+{
+<span style="color:#75715e">#if RGENGC_CHECK_MODE
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (RVALUE_MARKED(obj) <span style="color:#f92672">==</span> FALSE) rb_bug(<span style="color:#e6db74">&#34;gc_grey: %s is not marked.&#34;</span>, obj_info(obj));
+    <span style="color:#66d9ef">if</span> (RVALUE_MARKING(obj) <span style="color:#f92672">==</span> TRUE) rb_bug(<span style="color:#e6db74">&#34;gc_grey: %s is marking/remembered.&#34;</span>, obj_info(obj));
+<span style="color:#75715e">#endif
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">#if GC_ENABLE_INCREMENTAL_MARK
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (is_incremental_marking(objspace)) {
+	    MARK_IN_BITMAP(GET_HEAP_MARKING_BITS(obj), obj);
+    }
+<span style="color:#75715e">#endif
+</span><span style="color:#75715e"></span>
+    push_mark_stack(<span style="color:#f92672">&amp;</span>objspace<span style="color:#f92672">-&gt;</span>mark_stack, obj);
+}
+</code></pre></div><p>The first thing we see here (aside from the sanity check logic) is that we&rsquo;re marking in a bitmap, but only if incremental marking is enabled.</p>
+<p>This looks relevant to us, but is actually a red herring! We&rsquo;ve already marked our object in the <code>mark_bits</code> in the previous step - these <code>marking_bits</code> are used for something else.</p>
+<p>In this case it&rsquo;s to keep track of the marking status between marking steps when incremental marking is enabled, just in case we need to invalidate the mark stack at any point. This can be required if functions written inside C extensions (and therefore outside of the control of the VM) decide to forcefully free their own objects.</p>
+<p>The last thing this function does is push our marked object onto the mark stack. Just like our pseudo-code implementation of Mark &amp; Sweep earlier on in the post.</p>
+<p>Hooray! Now that we&rsquo;ve got a mark stack that is populated with our marked root objects, let&rsquo;s investigate how we mark the rest of the heap.</p>
+<h3 id="marking-the-rest-of-the-heap">Marking the rest of the heap</h3>
+<p>We said earlier that the mark phase was shared between two functions. Here&rsquo;s the second: <code>gc_marks_rest</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">gc_marks_rest</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace)
+{
+    gc_report(<span style="color:#ae81ff">1</span>, objspace, <span style="color:#e6db74">&#34;gc_marks_rest</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+
+<span style="color:#75715e">#if GC_ENABLE_INCREMENTAL_MARK
+</span><span style="color:#75715e"></span>    heap_eden<span style="color:#f92672">-&gt;</span>pooled_pages <span style="color:#f92672">=</span> NULL;
+<span style="color:#75715e">#endif
+</span><span style="color:#75715e"></span>
+    <span style="color:#66d9ef">if</span> (is_incremental_marking(objspace)) {
+	    <span style="color:#66d9ef">do</span> {
+	        <span style="color:#66d9ef">while</span> (gc_mark_stacked_objects_incremental(objspace, INT_MAX) <span style="color:#f92672">==</span> FALSE);
+	    } <span style="color:#66d9ef">while</span> (gc_marks_finish(objspace) <span style="color:#f92672">==</span> FALSE);
+    }
+    <span style="color:#66d9ef">else</span> {
+	    gc_mark_stacked_objects_all(objspace);
+	    gc_marks_finish(objspace);
+    }
+
+    <span style="color:#75715e">/* move to sweep */</span>
+    gc_sweep(objspace);
+}
+</code></pre></div><p>Ignoring the code paths that relate to incremental marking until another post. This code calls <code>gc_mark_stacked_objects_all</code>, and then the slightly ambiguously named <code>gc_marks_finish</code>, and finally moves us on to the sweeping stage with <code>gc_sweep</code>.</p>
+<p>Let&rsquo;s take a look at how the stacked objects are marked because this is where the core of our algorithm that walks the reachable objects lives.</p>
+<p><code>gc_mark_stacked_objects_all</code> eventually leads us to <code>gc_mark_stacked_objects</code> and specifically, these lines of code:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">    <span style="color:#66d9ef">while</span> (pop_mark_stack(mstack, <span style="color:#f92672">&amp;</span>obj)) {
+        gc_mark_children(objspace, obj);
+    }
+</code></pre></div><p>Hopefully it&rsquo;s clear that this function pops an object (<code>obj</code>) off the mark stack (<code>mstack</code>), calls <code>gc_mark_children</code> on the object and then repeats until the mark stack is empty. Just like our psuedo-implementation earlier in this article! The function <code>gc_mark_children</code> is massive so we&rsquo;re going to walk through the important parts, rather than look at the whole function at once.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">gc_mark_children</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace, VALUE obj)
+{
+    <span style="color:#66d9ef">register</span> RVALUE <span style="color:#f92672">*</span>any <span style="color:#f92672">=</span> RANY(obj);
+    gc_mark_set_parent(objspace, obj);
+    gc_mark(objspace, any<span style="color:#f92672">-&gt;</span>as.basic.klass);
+</code></pre></div><p>I&rsquo;ve cut out some special case code for unexpected objects and Ruby internals here, but this is the bulk of the work of this part of the function. We flag that the object we&rsquo;re looking at is our parent object, and then make sure it&rsquo;s marked.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">    <span style="color:#66d9ef">switch</span> (BUILTIN_TYPE(obj)) {
+</code></pre></div><p>The rest of this function is the body of this switch statement. We have different marking behaviour depending on what the type of the <code>RVALUE</code> in the slot is, because each object type is arranged differently in memory and has differing fields and references to other data in the heap. Taking a Ruby Array as an example (represented by the type <code>T_ARRAY</code>):</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">case</span> T_ARRAY:
+    <span style="color:#66d9ef">if</span> (FL_TEST(obj, ELTS_SHARED)) {
+        VALUE root <span style="color:#f92672">=</span> any<span style="color:#f92672">-&gt;</span>as.array.as.heap.aux.shared_root;
+        gc_mark(objspace, root);
+	  }
+	  <span style="color:#66d9ef">else</span> {
+        <span style="color:#66d9ef">long</span> i, len <span style="color:#f92672">=</span> RARRAY_LEN(obj);
+        <span style="color:#66d9ef">const</span> VALUE <span style="color:#f92672">*</span>ptr <span style="color:#f92672">=</span> RARRAY_CONST_PTR_TRANSIENT(obj);
+        <span style="color:#66d9ef">for</span> (i<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> len; i<span style="color:#f92672">++</span>) {
+          gc_mark(objspace, ptr[i]);
+	    }
+
+        <span style="color:#66d9ef">if</span> (LIKELY(during_gc)) {
+            <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>FL_TEST_RAW(obj, RARRAY_EMBED_FLAG) <span style="color:#f92672">&amp;&amp;</span>
+                    RARRAY_TRANSIENT_P(obj)) {
+                    rb_transient_heap_mark(obj, ptr);
+                }
+            }
+        }
+	<span style="color:#66d9ef">break</span>;
+</code></pre></div><p>Notice how this code uses <code>RARRAY_CONST_PTR_TRANSIENT</code> to get a pointer to the actual C array that backs the Ruby array (storing it in <code>ptr</code>), and then uses a for loop to iterate over each <code>RVALUE</code> contained in the array and marking it with <code>gc_mark</code>. We know from our previous investigations that calling <code>gc_mark</code> will result in this object being marked and added itself to the mark stack.</p>
+<p>Zooming out a little we see that this conforms to the shape of our initial mark and sweep pseudo-ruby algorithm - we&rsquo;re iterating over the mark stack, and for each marked object adding their direct children back to the mark stack, which will themselves be popped off the stack and their children marked. This repeats until the stack is empty, meaning that we&rsquo;ve reached everything that is reachable.</p>
+<p>The next function we identified, <code>gc_marks_finish</code> is primarily concerned with accounting information and is mostly not relevant to our discussion of generic Mark &amp; Sweep - it does do some cleanup of the heap and some reporting - but all the major work is now done. 🎉</p>
+<p>With that we can move on to sweeping. Which we&rsquo;re going to discuss in another post. This post ended up being way longer than I expected going into it so thank you so much for reading and congratulations on making it this far! I had a good time writing this and putting together all the material and I hope that this was a useful insight into how a real world programming language starts to implement its own automatic dynamic memory management system!</p>
+<p>Look forward to part 2b soon™ where we&rsquo;ll move on to sweeping (and maybe an intro to Generational GC if I get that far).</p>
+<section class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p>note that this is different to the term &lsquo;dynamic languages&rsquo;, which are languages in which operations that would traditionally be done at compile time, are done at run-time, examples of this are type checking and meta-programming. Dynamic is a pretty overused word when talking about programming languages tbh. <a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2" role="doc-endnote">
+<p>The abbreviation can mean both &ldquo;garbage collector&rdquo; and &ldquo;garbage collection&rdquo;. Hopefully this is obvious given the context. <a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:3" role="doc-endnote">
+<p>Code in this article is correct as of commit <code>df7efdcb6b7fd4286fe7d1fe853fb679aa6a5120</code> on the Ruby master branch. <a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:4" role="doc-endnote">
+<p>Ractors are an actor like concurrency framework introduced in Ruby 3.0 <a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</section>
+
+    </div>
+  </article>
+
+  
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with Hugo</a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+
