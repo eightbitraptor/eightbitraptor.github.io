@@ -23,8 +23,7 @@ It&amp;rsquo;s highly likely that, if you&amp;rsquo;ve never had to explicitly c
       <pubDate>Tue, 23 Mar 2021 22:04:13 +0000</pubDate>
       
       <guid>https://www.eightbitraptor.com/2021/03/23/gc-in-ruby-part-1-an-overview-of-memory-layout/</guid>
-      <description>Introduction (and raison d&amp;rsquo;être) My working life is currently spent working on the internals of Matz&amp;rsquo;s Ruby Interpreter(MRI) as part of the Ruby Infrastructure team at Shopify.
-I am pretty new to this kind of work. I&amp;rsquo;ve been a Ruby developer for a long time, but when I moved to this team in June 2020 I had no professional experience writing C, and had never seen the inside of a programming language interpreter before.</description>
+      <description>An introduction and code walkthrough of the Ruby memory model</description>
     </item>
     
     <item>
