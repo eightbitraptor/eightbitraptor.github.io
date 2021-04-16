@@ -80,6 +80,7 @@
 
     <div class="article-content">
       <h2 id="introduction">Introduction</h2>
+<p><em>This is the second part in a series. If you need a refresher of how the Ruby memory model works you can read part 1 <a href="https://www.eightbitraptor.com/2021/03/23/gc-in-ruby-part-1-an-overview-of-memory-layout/">here</a></em></p>
 <p>I&rsquo;m assuming that a huge proportion of the folks reading this post are programming with languages that implement automatic dynamic memory management. Ruby, Python, Go, JavaScript, Haskell, Swift, Lisp, Dart, and of course anything based on the .NET CLR or the JVM are all languages that manage memory automatically.</p>
 <p>It&rsquo;s highly likely that, if you&rsquo;ve never had to explicitly call <code>malloc</code> or a related API, then you&rsquo;re working in a language with automatic dynamic memory management<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></p>
 <p>Memory management generally consists of two main concerns. How memory is claimed from the Operating System for the program to use, and how it is returned to the Operating System when it&rsquo;s no longer needed.</p>
