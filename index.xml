@@ -6,7 +6,18 @@
     <description>Recent content on eightbitraptor</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-gb</language>
-    <lastBuildDate>Thu, 15 Apr 2021 15:30:38 +0100</lastBuildDate><atom:link href="https://www.eightbitraptor.com/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 20 Apr 2021 22:14:18 +0100</lastBuildDate><atom:link href="https://www.eightbitraptor.com/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Brewing a DIPA: Moving from extract to all-grain Home brewing</title>
+      <link>https://www.eightbitraptor.com/2021/04/20/brewing-a-dipa-moving-from-extract-to-all-grain-home-brewing/</link>
+      <pubDate>Tue, 20 Apr 2021 22:14:18 +0100</pubDate>
+      
+      <guid>https://www.eightbitraptor.com/2021/04/20/brewing-a-dipa-moving-from-extract-to-all-grain-home-brewing/</guid>
+      <description>Back in my retrospective on 2020 I mentioned that I&amp;rsquo;d picked up brewing beer as a pandemic hobby.
+There are three main methods of brewing you see homebrewers in the UK doing. The first uses the beer-in-a-can kits that you can buy in home hardware stores in the UK: you get basically concentrated beer extract that you dilute down to the required concentration and ferment.
+The second is extract brewing. You start with a simple pale ale malt extract.</description>
+    </item>
+    
     <item>
       <title>GC in Ruby: Part 2 (a), What is GC, Mark &amp; Sweep, and how Ruby marks objects</title>
       <link>https://www.eightbitraptor.com/2021/04/15/gc-in-ruby-part-2-a-what-is-gc-mark-sweep-and-how-ruby-marks-objects/</link>
