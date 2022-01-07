@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Hugo 0.82.0" />
+<meta name="generator" content="Hugo 0.91.2" />
 
 
 <title>Weeknote 2021.07: Buy one, get one free - eightbitraptor</title>
@@ -151,7 +151,7 @@ At the start of the payload region we have a 16 byte area for metadata about
 the payload, it&rsquo;s length and so on - and then we go straight into the
 arbitrary payload data.</p>
 <p>We can see this here: this is the main object:</p>
-<pre><code>(lldb) p obj
+<pre tabindex="0"><code>(lldb) p obj
 (VALUE) $2 = 0x00000001018137e0
 (lldb) rp obj
 bits [LM    ]
@@ -163,7 +163,7 @@ T_CLASS: [PROMOTED] (struct RClass) $4 = {
 }
 </code></pre><p>This is what a Ruby class looks like. The struct member <code>ptr</code> points to a
 struct of type <code>rb_classext_t</code> that looks like this:</p>
-<pre><code>(lldb) p *((struct RClass *)obj)-&gt;ptr
+<pre tabindex="0"><code>(lldb) p *((struct RClass *)obj)-&gt;ptr
 (rb_classext_struct) $5 = {
   iv_index_tbl = 0x0000000000000000
   iv_tbl = 0x0000000100a63340
@@ -186,7 +186,7 @@ with our knowledge of the memory layout that each slot is 40 bytes wide and
 the Payload section contains a 16 byte header object.</p>
 <p>We can verify this by grabbing the obj and adding 40 bytes and we should get
 hold of a Payload header object.</p>
-<pre><code>(lldb) rp obj + 40
+<pre tabindex="0"><code>(lldb) rp obj + 40
 bits [      ]
 Not-handled type 0x17
 (RBasic *) $10 = 0x0000000101813808
@@ -255,7 +255,7 @@ didn&rsquo;t realise it.</p>
 </li>
 </ol>
 <p>Anyway: Here it is in all it&rsquo;s glory.</p>
-<p><img src="/images/nibble.jpg" style="width:100%" alt="My newly built Nibble 65% keyboard with Durock Linear 62g L7's" /></p>
+<img src="/images/nibble.jpg" style="width:100%" alt="My newly built Nibble 65% keyboard with Durock Linear 62g L7's" />
 </li>
 <li>
 <p>After a flash of inspiration I put together a 45% keyboard design and PCB.

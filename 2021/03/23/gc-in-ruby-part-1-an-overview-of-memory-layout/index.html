@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Hugo 0.82.0" />
+<meta name="generator" content="Hugo 0.91.2" />
 
 
 <title>GC in Ruby: Part 1, An overview of memory layout - eightbitraptor</title>
@@ -104,7 +104,7 @@
 <h2 id="rvalues-objects-and-how-we-identify-them">RValues, Objects, and how we identify them.</h2>
 <p>The first thing that we need to know is that all Ruby objects are the same size. They are stored as C structs that are 40 bytes wide called <code>RVALUE</code>s. There are shenanigans that happen when an objects data cannot actually fit inside of 40 bytes (consider a long string for example), but, for the purposes of garbage collection we just need to remember that every Ruby object corresponds to exactly one <code>RVALUE</code>.</p>
 <p>Here is the basic structure of an <code>RVALUE</code>. Some parts that aren&rsquo;t relevant to this topic have been elided for readability.</p>
-<pre><code class="language-c=" data-lang="c=">typedef struct RVALUE {
+<pre tabindex="0"><code class="language-c=" data-lang="c=">typedef struct RVALUE {
     union {
 	struct {
 	    VALUE flags;		/* always 0 for freed obj */
@@ -134,20 +134,20 @@
 <p>Developers familiar with using unions in C will recognise a consequence of this arrangement, which is that without some kind of type information it&rsquo;s possible for us to treat one member of a union as a different member.</p>
 <p>This can get us into trouble, as the memory layout wouldn&rsquo;t necessarily map to the member fields of the other struct.</p>
 <p>For example: Assume we have an <code>RVALUE</code> pointer called <code>rval</code> that represents a String (<code>RString</code> in Ruby parlance). The correct way to access the data for that string is</p>
-<pre><code class="language-c=" data-lang="c=">RString str;
+<pre tabindex="0"><code class="language-c=" data-lang="c=">RString str;
 str = rval-&gt;as.string;
 </code></pre><p>But, there&rsquo;s nothing stopping us from accessing it as something else. We could equally assume that <code>rval</code> is a <code>Regexp</code></p>
-<pre><code class="language-c=" data-lang="c=">RRegexp regex;
+<pre tabindex="0"><code class="language-c=" data-lang="c=">RRegexp regex;
 regex = rval-&gt;as.regexp;
 </code></pre><p>And in this case, because <code>struct RString</code> and <code>struct RRegexp</code> have different layouts, the information is going to be garbled. In the best case our code will error, and in the worst case we&rsquo;ll be able to use the <code>struct</code> in ways that look sensible but are wrong - causing hard to detect problems later on in our code.</p>
 <p>Ruby does provide type tagging to mitigate this in a struct called <code>RBasic</code> that is always defined consistently at the start of every type struct included in the <code>as</code> union.</p>
 <p><code>RBasic</code> is defined as follows:</p>
-<pre><code class="language-c=" data-lang="c=">struct RBasic {
+<pre tabindex="0"><code class="language-c=" data-lang="c=">struct RBasic {
     VALUE flags;                /**&lt; @see enum ::ruby_fl_type. */
     const VALUE klass;
 };
 </code></pre><p>And we can see how it&rsquo;s used by looking at <code>RString</code> and <code>RArray</code> as examples.</p>
-<pre><code class="language-c=" data-lang="c=">// rstring.h
+<pre tabindex="0"><code class="language-c=" data-lang="c=">// rstring.h
 struct RString {
     struct RBasic basic;
     /* .... content snipped .... */
@@ -161,7 +161,7 @@ struct RArray {
 
 /* and so on for all other Ruby types */
 </code></pre><p>Because <code>basic</code> is always the first member of the struct, it is therefore in the same memory location relative to the start of every <code>RVALUE</code>. This means that it&rsquo;s always possible to get hold of the <code>flags</code> and <code>klass</code> in a consistent way no matter the <code>RVALUE</code> type:</p>
-<pre><code class="language-c=" data-lang="c=">VALUE flags = rval-&gt;as.basic.flags;
+<pre tabindex="0"><code class="language-c=" data-lang="c=">VALUE flags = rval-&gt;as.basic.flags;
 VALUE my_klass = rval-&gt;as.basic.klass;
 </code></pre><p>The <code>RBasic</code> struct is relatively compact, taking up just 16 bytes (<code>VALUE</code> is a type alias for an <code>unsigned long</code>, which is 8 bytes on a 64 bit architecture).</p>
 <p>The <code>flags</code> member is treated as an array of bits, and stores a lot of information about the state of an object, whether it&rsquo;s frozen, whether it&rsquo;s a singleton and much more, including some user-definable bits that can be used when implementing new Ruby types - but importantly for us, the 5 least significant bits are used to store a builtin type code.</p>
@@ -169,7 +169,7 @@ VALUE my_klass = rval-&gt;as.basic.klass;
 <p>So now we have a consistent way of finding out which builtin type an <code>RVALUE</code> is, as well as it&rsquo;s Ruby class.</p>
 <p>Ruby provides pre-processor macros to make working with this information easier and less error-prone than accessing the flags manually every time, and these macros make working with <code>RVALUE</code>s easier.</p>
 <p>The first is <code>BUILTIN_TYPE</code>. This takes a pointer to an <code>RValue</code> as its argument, dereferences it, applies a mask to the <code>flags</code> to focus just on the type bits, and then compares that to a known list of types. A good example can be seen in the <code>obj_free</code> function inside <code>gc.c</code>. This function reclaims memory for objects that are no longer needed, and the way in which memory is reclaimed will depend on how the object in question stores references to its external data.</p>
-<pre><code class="language-c=" data-lang="c=">switch (BUILTIN_TYPE(obj)) {
+<pre tabindex="0"><code class="language-c=" data-lang="c=">switch (BUILTIN_TYPE(obj)) {
     case T_OBJECT:
         /* .... some stuff .... */
         break;
@@ -188,7 +188,7 @@ VALUE my_klass = rval-&gt;as.basic.klass;
         break;
     /* ... and so on for all other builtin types .... */
 </code></pre><p>Another is <code>RB_TYPE_P</code>, which is a predicate allowing you to check an <code>RVALUE</code> against a specific type. You can see this being used in <code>string.c</code>: <code>rb_str_eql</code> is the underlying function that runs when you call <code>String#eql?</code> in your Ruby code.</p>
-<pre><code class="language-c=" data-lang="c=">VALUE
+<pre tabindex="0"><code class="language-c=" data-lang="c=">VALUE
 rb_str_eql(VALUE str1, VALUE str2)
 {
     if (str1 == str2) return Qtrue;
@@ -206,13 +206,13 @@ rb_str_eql(VALUE str1, VALUE str2)
 <p>The first unit of organisation that we&rsquo;ll consider is the <code>struct heap_page</code>. A heap page is a container for a series of slots that are contiguous in memory. It contains accounting information about the number of slots in a page and how many are free, a reference to the starting slot in memory, some bitmasks that are used during the garbage collection process to tell whether an object is marked or pinned (more on this later).</p>
 <p>Heap pages are exactly 16Kb in size, so they can be aligned to multiples of the operating system page size, in order to use memory as efficiently as we can. Most OS pages are 4Kb, so each 16Kb Ruby heap page maps to 4 OS pages.</p>
 <p>Because each page is a fixed size, it can only contain a limited number of slots, this is calculated by subtracting some space for header information and dividing the size of the rest of the page by the size of an <code>RVALUE</code>, which it does in the following way.</p>
-<pre><code class="language-c=" data-lang="c=">HEAP_PAGE_OBJ_LIMIT = (unsigned int)(
+<pre tabindex="0"><code class="language-c=" data-lang="c=">HEAP_PAGE_OBJ_LIMIT = (unsigned int)(
   (HEAP_PAGE_SIZE - sizeof(struct heap_page_header))/sizeof(struct RVALUE)
 )
 </code></pre><p>This gives us a limit of 409 slots per page.</p>
 <p>An interesting quirk of this is that due to memory alignment constraints, a heap page may not necessarily contain 409 slots, sometimes it&rsquo;ll contain 408.</p>
 <p>This happens because during the ruby page/os page allocation we may find ourselves with a starting address that doesn&rsquo;t evenly divide by the size of an <code>RVALUE</code>. In this case Ruby juggles the <code>page-&gt;start</code> pointer up a few bits so that its aligned. This causes the 409th slot to not fit on the page anymore so Ruby removes it. The code that does that is in <code>heap_page_allocate</code> in <code>gc.c</code> and it looks like this:</p>
-<pre><code class="language-c=" data-lang="c=">/* assign heap_page body (contains heap_page_header and RVALUEs) */
+<pre tabindex="0"><code class="language-c=" data-lang="c=">/* assign heap_page body (contains heap_page_header and RVALUEs) */
 page_body = (struct heap_page_body *)rb_aligned_malloc(HEAP_PAGE_ALIGN, HEAP_PAGE_SIZE);
 
 /* assign heap_page entry */
@@ -231,7 +231,7 @@ end = start + limit;
 <h3 id="the-freelist">The freelist</h3>
 <p><em><strong>NOTE:</strong> Some of this code has changed between the commit I was looking at when I wrote this and the latest trunk. Ractors, an actor-like concurrency framework was introduced in Ruby 3.0.0 - released Dec 25th 2020. This has resulted in heap pages and their freelists being cached in the context of a Ractor now. Without this exclusivity, having multiple Ractors allocate in a single freelist would have been a concurrency nightmare. I&rsquo;ll try and remember to write up something about the differences in a later post, I promise</em></p>
 <p>Earlier we mentioned that an empty slot is just an <code>RVALUE</code> of type <code>T_NONE</code>. Let&rsquo;s look a little closer at the implementation of the <code>RVALUE</code> struct, particularly the first entry in the <code>as</code> union:</p>
-<pre><code class="language-c=" data-lang="c=">typedef struct RVALUE {
+<pre tabindex="0"><code class="language-c=" data-lang="c=">typedef struct RVALUE {
     union {
         struct {
             VALUE flags;		/* always 0 for freed obj */
@@ -247,7 +247,7 @@ end = start + limit;
 <p>We can see this freelist manipulation happening in the functions <code>heap_page_add_freeobj</code> and <code>heap_get_freeobj</code> respectively.</p>
 <p>Removing some verification and memory protection code from these functions to highlight just the important parts for this discussion leaves us with:</p>
 <h3 id="heap_get_freeobj">heap_get_freeobj</h3>
-<pre><code class="language-c=" data-lang="c=">static inline VALUE
+<pre tabindex="0"><code class="language-c=" data-lang="c=">static inline VALUE
 heap_get_freeobj(rb_objspace_t *objspace, rb_heap_t *heap)
 {
     RVALUE *p = heap-&gt;freelist;
@@ -266,7 +266,7 @@ heap_get_freeobj(rb_objspace_t *objspace, rb_heap_t *heap)
 <p>It does this by checking whether the free slot we&rsquo;re using has a next pointer defined, if so we can use that directly.</p>
 <p>If there is not next pointer defined then we may be at the end of the heap so we need to do some more work - <code>heap_get_freeobj_from_next_freepage</code> hides some complexity about what we do if there isn&rsquo;t any free space left, but hopefully the function name makes the intent obvious.</p>
 <h4 id="heap_page_add_freeobj">heap_page_add_freeobj</h4>
-<pre><code class="language-c=" data-lang="c=">static inline void
+<pre tabindex="0"><code class="language-c=" data-lang="c=">static inline void
 heap_page_add_freeobj(rb_objspace_t *objspace, struct heap_page *page, VALUE obj)
 {
     RVALUE *p = (RVALUE *)obj;
@@ -279,7 +279,7 @@ heap_page_add_freeobj(rb_objspace_t *objspace, struct heap_page *page, VALUE obj
 <p>Looking at these two operations we can see that whilst the freelist is implemented as a linked list, we&rsquo;re actually using it like a stack. We pop slots off the list to fill with data and then when we&rsquo;re done with the slot we add it back to the front of the list.</p>
 <h4 id="a-quirk-of-the-freelist-its-all-backwards">A quirk of the freelist: it&rsquo;s all backwards</h4>
 <p>When heap pages are built, first all the memory required is allocated and the slots are defined. Then the freelist is built:</p>
-<pre><code class="language-c=" data-lang="c=">for (p = start; p != end; p++) {
+<pre tabindex="0"><code class="language-c=" data-lang="c=">for (p = start; p != end; p++) {
 	gc_report(3, objspace, &quot;assign_heap_page: %p is added to freelist\n&quot;, (void *)p);
 	heap_page_add_freeobj(objspace, page, (VALUE)p);
 }
@@ -293,7 +293,7 @@ heap_page_add_freeobj(rb_objspace_t *objspace, struct heap_page *page, VALUE obj
 <p>Each heap contains a list of pages that contain free slots, called <code>free_pages</code> and a pointer to the page that is currently being allocated into, called <code>using_page</code>, as well as an iterator of all pages that is used during the sweeping phase of garbage collection.</p>
 <p>Both Eden and Tomb heaps are initialised at the start of the Ruby interpreter bootup, using default parameters that can be overridden by the user.</p>
 <p>The code for that lives inside <code>gc.c</code> as part of the <code>Init_heap</code> function</p>
-<pre><code class="language-c=" data-lang="c=">void
+<pre tabindex="0"><code class="language-c=" data-lang="c=">void
 Init_heap(void)
 {
     rb_objspace_t *objspace = &amp;rb_objspace;
@@ -308,7 +308,7 @@ Init_heap(void)
 <p>The call to <code>heap_add_pages</code> gives us some interesting information. Firstly that we only add pages to the <code>heap_eden</code> when we start the VM. Secondly that the number of pages we&rsquo;ll start with is configurable by tuning the parameter <code>gc_params.heap_init_slots</code>. This is exposed to the user as the environment variable <code>RUBY_GC_HEAP_INIT_SLOTS</code>.</p>
 <p>So, now that we know that Ruby prefills our <code>eden_heap</code> with a set number of empty pages when our interpreter starts, it should follow that the <code>eden_heap</code> is where all of our objects are allocated. So what is the <code>tomb_heap</code> used for?</p>
 <p>We&rsquo;ll cover this in more detail in a future post when we cover mark &amp; sweep garbage collection, but some relevant code for this lives inside the <code>gc_sweep_step</code> function:</p>
-<pre><code class="language-c=" data-lang="c=">if (sweep_page-&gt;final_slots + free_slots == sweep_page-&gt;total_slots &amp;&amp;
+<pre tabindex="0"><code class="language-c=" data-lang="c=">if (sweep_page-&gt;final_slots + free_slots == sweep_page-&gt;total_slots &amp;&amp;
     heap_pages_freeable_pages &gt; 0 &amp;&amp;
     unlink_limit &gt; 0) {
     heap_pages_freeable_pages--;
@@ -319,7 +319,7 @@ Init_heap(void)
 }
 </code></pre><p>Handwaving away some details for now - this code says that if the number of free slots on the page that we&rsquo;re currently sweeping is the same as the total number of slots on the page (ie. there are no live objects left on the page), then we remove the page from the Eden heap and move it into the Tomb heap.</p>
 <p>This contrasts nicely with the code in <code>heap_page_create</code>:</p>
-<pre><code class="language-c=" data-lang="c=">static struct heap_page *
+<pre tabindex="0"><code class="language-c=" data-lang="c=">static struct heap_page *
 heap_page_create(rb_objspace_t *objspace)
 {
     struct heap_page *page;
@@ -350,7 +350,7 @@ heap_page_create(rb_objspace_t *objspace)
 <hr>
 <ol>
 <li id="fn:1" role="doc-endnote">
-<p>I&rsquo;ll use &ldquo;Ruby&rdquo; a lot in this post. I know that there are many Rubies in the world and that I&rsquo;m only talking about one, and so the generic use of Ruby may be incorrect. But it&rsquo;s prudent to bear in mind that everything I talk about here applies specifically to the default Ruby Implementation, started by Matz, written in C and hosted on <a href="https://www.ruby-lang.org">https://www.ruby-lang.org</a>. Other implementations may do things differently. <a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+<p>I&rsquo;ll use &ldquo;Ruby&rdquo; a lot in this post. I know that there are many Rubies in the world and that I&rsquo;m only talking about one, and so the generic use of Ruby may be incorrect. But it&rsquo;s prudent to bear in mind that everything I talk about here applies specifically to the default Ruby Implementation, started by Matz, written in C and hosted on <a href="https://www.ruby-lang.org">https://www.ruby-lang.org</a>. Other implementations may do things differently.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 </ol>
 </section>

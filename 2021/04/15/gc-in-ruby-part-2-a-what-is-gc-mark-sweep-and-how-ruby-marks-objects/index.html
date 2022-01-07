@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Hugo 0.82.0" />
+<meta name="generator" content="Hugo 0.91.2" />
 
 
 <title>GC in Ruby: Part 2 (a), What is GC, Mark &amp; Sweep, and how Ruby marks objects - eightbitraptor</title>
@@ -108,7 +108,7 @@
 <p>All of the mutator and collector threads operate over the same heap.</p>
 <h3 id="references-and-fields">References and Fields</h3>
 <p>Objects can contain references to other objects. Consider the following Ruby code:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Foo</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Foo</span>
   <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">initialize</span>(name)
     @name <span style="color:#f92672">=</span> name
   <span style="color:#66d9ef">end</span>
@@ -123,7 +123,7 @@
 <p>A <strong>reference</strong> is a field of an object that contains a pointer to another object on the heap.</p>
 <p>A pointer is a term meaning the memory address of another object. Ruby uses a type called <code>VALUE</code> to store it&rsquo;s object pointers, and they always point to the starting address of an <code>RVALUE</code> on the heap.</p>
 <p>The GC Handbook defines this more formally:</p>
-<pre><code class="language-=" data-lang="=">Pointers(N) = { a | a = &amp;N[i]; ∀i: 0 ≤ i &lt; |N| where N[i] is a pointer}
+<pre tabindex="0"><code class="language-=" data-lang="=">Pointers(N) = { a | a = &amp;N[i]; ∀i: 0 ≤ i &lt; |N| where N[i] is a pointer}
 </code></pre><p>This is a statement, written in Set notation, that tells us how to define the set of references for an object. It says:</p>
 <p>For an object <code>N</code>: The set of addresses that are the pointer fields of <code>N</code> are all the addresses to fields that are contained in the field list of <code>N</code> where the contents of the field is a pointer.</p>
 <p>Or, more basically: references are the fields of an object that are pointers to other objects.</p>
@@ -161,7 +161,7 @@
 <p>Mark &amp; sweep doesn&rsquo;t rely on information stored in the objects themselves in order to collect garbage, it relies on object reachability, so there&rsquo;s no need for us to implement our own implementations for <code>Read</code> or <code>Write</code>.</p>
 <p>Instead the Mark &amp; Sweep collector interfaces with the mutators during object allocation. If a thread tries to allocate an object and there is no space left on the heap, then collection runs and the allocation is retried. If the allocation fails again, we are therefore out of memory and the program terminates.</p>
 <p>In Ruby, this could look something like the following:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">new_object</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">new_object</span>
   ref <span style="color:#f92672">=</span> heap<span style="color:#f92672">.</span>allocate
   
   <span style="color:#66d9ef">if</span> ref<span style="color:#f92672">.</span>nil?
@@ -185,7 +185,7 @@
 </code></pre></div><p>Looking at this code we can see that there are two main paths through the object allocation method. The first is nice and quick - we request an reference from the allocator, which immediately allocates us an object and returns it. The second is much less efficient - because the first allocation fails so now we have to stop the world and run GC before we can try again.</p>
 <p>Ruby uses an algorithm similar to this internally, but there are some differences - arising mainly because the heap is divided up into separate pages.</p>
 <p>We can see the basic shape of Ruby&rsquo;s implementation of this <code>New</code> GC hook in action by looking at the function <code>newobj_of0</code> in <code>gc.c</code>:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> VALUE
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> VALUE
 <span style="color:#a6e22e">newobj_of0</span>(VALUE klass, VALUE flags, <span style="color:#66d9ef">int</span> wb_protected, rb_ractor_t <span style="color:#f92672">*</span>cr)
 {
     <span style="color:#66d9ef">if</span> (obj <span style="color:#f92672">=</span> ractor_cached_freeobj(objspace, cr)) <span style="color:#f92672">!=</span> Qfalse) {
@@ -205,7 +205,7 @@
 <p><em>Note that, even when we&rsquo;re not explicitly using Ractors in our code behind the scenes, there is always one ractor - which Ruby refers to as the main Ractor. You can dig deeper into this by looking at the macro <code>GET_RACTOR</code> and the ractor struct <code>ruby_single_main_ractor</code>).</em></p>
 <p>If the object was not allocated successfully (ie. the call to <code>ractor_cached_freeobj</code> returns <code>Qfalse</code>), then we follow the slowpath.</p>
 <p>We&rsquo;ll discuss what it means for an object to be write-barrier protected or unprotected in a later post about Generational GC, but for this discussion they&rsquo;re not relevent. Both of these funtions eventually lead us to <code>newobj_slowpath</code> which is where the second path of our <code>New</code> job is implemented:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">while</span> ((obj <span style="color:#f92672">=</span> ractor_cached_freeobj(objspace, cr)) <span style="color:#f92672">==</span> Qfalse) {
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">while</span> ((obj <span style="color:#f92672">=</span> ractor_cached_freeobj(objspace, cr)) <span style="color:#f92672">==</span> Qfalse) {
     ractor_cache_slots(objspace, cr);
 }
 GC_ASSERT(obj <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>);
@@ -213,7 +213,7 @@ newobj_init(klass, flags, wb_protected, objspace, obj);
 </code></pre></div><p>There&rsquo;s a bit of indirection here - We&rsquo;re going to need to follow the rabbit hole a little deeper before we find out whether we actually need to run GC.</p>
 <p>In our first variation from our naive <code>New</code> implementation we actually attempt the allocation again multiple times instead of just once, by calling <code>ractor_cached_freeobj</code> and <code>ractor_cache_slots</code> in a loop until we get a free slot back successfully.</p>
 <p>The job of <code>ractor_cache_slots</code> is to find the next page in the heap that has free slots and cache it onto the ractor.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span>
 <span style="color:#a6e22e">ractor_cache_slots</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace, rb_ractor_t <span style="color:#f92672">*</span>cr)
 {
    ASSERT_vm_locking();
@@ -227,7 +227,7 @@ newobj_init(klass, flags, wb_protected, objspace, obj);
    page<span style="color:#f92672">-&gt;</span>freelist <span style="color:#f92672">=</span> NULL;
 }
 </code></pre></div><p>The actual caching isn&rsquo;t that interesting, it&rsquo;s just modifying some pointers in a linked list, but <code>heap_next_freepage</code> looks important. This function returns the next page on the heap that contains free slots, and when there are no free pages left - then we start GC to reclaim space. We can see the actual call to <code>gc_start</code> here, buried inside the test expression for the last conditional in <code>heap_prepare</code> in <code>gc.c</code></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">heap_prepare(rb_objspace_t <span style="color:#f92672">*</span>objspace, rb_heap_t <span style="color:#f92672">*</span>heap)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">heap_prepare(rb_objspace_t <span style="color:#f92672">*</span>objspace, rb_heap_t <span style="color:#f92672">*</span>heap)
 {
     GC_ASSERT(heap<span style="color:#f92672">-&gt;</span>free_pages <span style="color:#f92672">==</span> NULL);
 
@@ -247,7 +247,7 @@ newobj_init(klass, flags, wb_protected, objspace, obj);
 }
 </code></pre></div><p><em>Side rant: There&rsquo;s a pattern here I see a lot in the MRI codebase and I don&rsquo;t like it. the actual important work is being done in a really long and complext test expression of an if statement, and the body of the conditional just raises an error. I feels like it&rsquo;s obfuscating the most important part of the function, which is that we should start GC when there are no free pages. C developers: <a href="https://twitter.com/eightbitraptor">tell me why I&rsquo;m wrong!</a></em></p>
 <p>Now that we&rsquo;ve found the actual call to <code>gc_start</code> we can step back through our algorithm and try and write it out in psuedo-Ruby, to compare with our generic Mark &amp; Sweep <code>New</code> implementation to see what changes Ruby is making to compensate for the division of the heap into pages.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">new_object</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">new_object</span>
   ref <span style="color:#f92672">=</span> current_page<span style="color:#f92672">.</span>allocate
 
   <span style="color:#66d9ef">if</span> ref<span style="color:#f92672">.</span>nil?
@@ -271,7 +271,7 @@ newobj_init(klass, flags, wb_protected, objspace, obj);
 <p>The actual marking algorithm isn&rsquo;t too complex. First we find the root objects, mark them and add them to a worklist. Then, until the worklist is empty, we pop an object off and traverse it&rsquo;s set of pointers, marking and adding the object at the end of each reference to the worklist.</p>
 <p>Because this worklist is used like a stack (ie. last in, first out) of marked objects, it&rsquo;s often referred to as the mark stack.</p>
 <p>An example of this would look like:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">mark_roots</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">mark_roots</span>
   @worklist <span style="color:#f92672">=</span> <span style="color:#f92672">[]</span>
 
   roots<span style="color:#f92672">.</span>each <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>root<span style="color:#f92672">|</span>
@@ -312,7 +312,7 @@ process_mark_stack
 <p>For now the only interesting work that <code>gc_start</code> does is to call <code>gc_enter</code> which stops all other Ractors and mutator threads and claims a VM lock, so that nothing can happen while the collector is running. This is the stop-the-world part of the process. It does this before calling <code>gc_marks</code></p>
 <p><code>gc_marks</code> splits the mark phase into two. <code>gc_marks_start</code> and <code>gc_marks_rest</code>. This split is an artifact of incremental marking which we&rsquo;ll talk about in a future post, but for now all we need to know is that <code>gc_marks_start</code> is where the roots are marked and added to the mark stack and <code>gc_marks_rest</code> is what processes the mark list, popping objects off and marking their children.</p>
 <h4 id="marking-the-roots">Marking the roots</h4>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
 <span style="color:#a6e22e">gc_mark_roots</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>categoryp)
 {
     <span style="color:#66d9ef">struct</span> gc_list <span style="color:#f92672">*</span>list;
@@ -343,7 +343,7 @@ process_mark_stack
 <p>We can see that the root object set contains the Ruby virtual machine itself, as well as any reference directly attached to the VM, this includes all the individual Ractors, the Ruby load path, as well as all the global call cache tables and their contents.</p>
 <p>The global variable table itself, and the list of globals are also considered roots, as well as the finalizer table (finalizers are blocks of code, attached to an object, that are run when that object is garbage collected), and the current VM context object.</p>
 <p>There are a bunch of interesting functions here: <code>gc_mark</code>, <code>gc_mark_maybe</code>, <code>mark_tbl_no_pin</code> that all deal with actually marking various types of objects, in various states. All of them, when you follow the path down, eventually lead to <code>gc_mark_ptr</code> which is where the core marking logic really starts.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
 <span style="color:#a6e22e">gc_mark_ptr</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace, VALUE obj)
 {
     <span style="color:#66d9ef">if</span> (LIKELY(during_gc)) {
@@ -363,9 +363,9 @@ process_mark_stack
 }
 </code></pre></div><p>We&rsquo;ll talk more about checking relations and <code>gc_aging</code> in a later post when we talk about the generational garbage collector.</p>
 <p>There are 2 interesting parts to this function. the first is the slightly misleading line here:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>gc_mark_set(objspace, obj)) <span style="color:#66d9ef">return</span> <span style="color:#75715e">/* already marked */</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>gc_mark_set(objspace, obj)) <span style="color:#66d9ef">return</span> <span style="color:#75715e">/* already marked */</span>
 </code></pre></div><p>See my earlier side note about burying side effect laden code inside conditional tests - This line is what actually does the marking.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">int</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">int</span>
 <span style="color:#a6e22e">gc_mark_set</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace, VALUE obj)
 {
     ASSERT_vm_locking();
@@ -377,7 +377,7 @@ process_mark_stack
 <p>Objects are marked not by setting a flag on the object itself, but by marking them in a seperate table. In Ruby&rsquo;s case, each heap page has a data structure called the <code>mark_bits</code> that is an array of bits, with each bit corresponding to a slot in the heap.</p>
 <p>The slot is marked if its mark bit is <code>1</code> and not if its mark bit is <code>0</code>. In the GC Handbook, this is known as bitmap marking. It has a few benefits: It doesn&rsquo;t mutate objects in the heap during GC. It also allows the marking information to be stored densely. This can have speed gains when sweeping as we can keep more marking information in a single CPU cache line.</p>
 <p>Moving back to <code>gc_mark_ptr</code>, once we get past the sanity checking code we can see the call to <code>gc_grey</code>! This is the part of the process where we start to recognise terminology from what we know so far about mark &amp; sweep!</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">gc_grey(rb_objspace_t <span style="color:#f92672">*</span>objspace, VALUE obj)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">gc_grey(rb_objspace_t <span style="color:#f92672">*</span>objspace, VALUE obj)
 {
 <span style="color:#75715e">#if RGENGC_CHECK_MODE
 </span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (RVALUE_MARKED(obj) <span style="color:#f92672">==</span> FALSE) rb_bug(<span style="color:#e6db74">&#34;gc_grey: %s is not marked.&#34;</span>, obj_info(obj));
@@ -399,7 +399,7 @@ process_mark_stack
 <p>Hooray! Now that we&rsquo;ve got a mark stack that is populated with our marked root objects, let&rsquo;s investigate how we mark the rest of the heap.</p>
 <h3 id="marking-the-rest-of-the-heap">Marking the rest of the heap</h3>
 <p>We said earlier that the mark phase was shared between two functions. Here&rsquo;s the second: <code>gc_marks_rest</code>:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
 <span style="color:#a6e22e">gc_marks_rest</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace)
 {
     gc_report(<span style="color:#ae81ff">1</span>, objspace, <span style="color:#e6db74">&#34;gc_marks_rest</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
@@ -424,20 +424,20 @@ process_mark_stack
 </code></pre></div><p>Ignoring the code paths that relate to incremental marking until another post. This code calls <code>gc_mark_stacked_objects_all</code>, and then the slightly ambiguously named <code>gc_marks_finish</code>, and finally moves us on to the sweeping stage with <code>gc_sweep</code>.</p>
 <p>Let&rsquo;s take a look at how the stacked objects are marked because this is where the core of our algorithm that walks the reachable objects lives.</p>
 <p><code>gc_mark_stacked_objects_all</code> eventually leads us to <code>gc_mark_stacked_objects</code> and specifically, these lines of code:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">    <span style="color:#66d9ef">while</span> (pop_mark_stack(mstack, <span style="color:#f92672">&amp;</span>obj)) {
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">    <span style="color:#66d9ef">while</span> (pop_mark_stack(mstack, <span style="color:#f92672">&amp;</span>obj)) {
         gc_mark_children(objspace, obj);
     }
 </code></pre></div><p>Hopefully it&rsquo;s clear that this function pops an object (<code>obj</code>) off the mark stack (<code>mstack</code>), calls <code>gc_mark_children</code> on the object and then repeats until the mark stack is empty. Just like our psuedo-implementation earlier in this article! The function <code>gc_mark_children</code> is massive so we&rsquo;re going to walk through the important parts, rather than look at the whole function at once.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
 <span style="color:#a6e22e">gc_mark_children</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace, VALUE obj)
 {
     <span style="color:#66d9ef">register</span> RVALUE <span style="color:#f92672">*</span>any <span style="color:#f92672">=</span> RANY(obj);
     gc_mark_set_parent(objspace, obj);
     gc_mark(objspace, any<span style="color:#f92672">-&gt;</span>as.basic.klass);
 </code></pre></div><p>I&rsquo;ve cut out some special case code for unexpected objects and Ruby internals here, but this is the bulk of the work of this part of the function. We flag that the object we&rsquo;re looking at is our parent object, and then make sure it&rsquo;s marked.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">    <span style="color:#66d9ef">switch</span> (BUILTIN_TYPE(obj)) {
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">    <span style="color:#66d9ef">switch</span> (BUILTIN_TYPE(obj)) {
 </code></pre></div><p>The rest of this function is the body of this switch statement. We have different marking behaviour depending on what the type of the <code>RVALUE</code> in the slot is, because each object type is arranged differently in memory and has differing fields and references to other data in the heap. Taking a Ruby Array as an example (represented by the type <code>T_ARRAY</code>):</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">case</span> T_ARRAY:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">case</span> T_ARRAY:
     <span style="color:#66d9ef">if</span> (FL_TEST(obj, ELTS_SHARED)) {
         VALUE root <span style="color:#f92672">=</span> any<span style="color:#f92672">-&gt;</span>as.array.as.heap.aux.shared_root;
         gc_mark(objspace, root);
@@ -466,16 +466,16 @@ process_mark_stack
 <hr>
 <ol>
 <li id="fn:1" role="doc-endnote">
-<p>note that this is different to the term &lsquo;dynamic languages&rsquo;, which are languages in which operations that would traditionally be done at compile time, are done at run-time, examples of this are type checking and meta-programming. Dynamic is a pretty overused word when talking about programming languages tbh. <a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+<p>note that this is different to the term &lsquo;dynamic languages&rsquo;, which are languages in which operations that would traditionally be done at compile time, are done at run-time, examples of this are type checking and meta-programming. Dynamic is a pretty overused word when talking about programming languages tbh.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 <li id="fn:2" role="doc-endnote">
-<p>The abbreviation can mean both &ldquo;garbage collector&rdquo; and &ldquo;garbage collection&rdquo;. Hopefully this is obvious given the context. <a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+<p>The abbreviation can mean both &ldquo;garbage collector&rdquo; and &ldquo;garbage collection&rdquo;. Hopefully this is obvious given the context.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 <li id="fn:3" role="doc-endnote">
-<p>Code in this article is correct as of commit <code>df7efdcb6b7fd4286fe7d1fe853fb679aa6a5120</code> on the Ruby master branch. <a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+<p>Code in this article is correct as of commit <code>df7efdcb6b7fd4286fe7d1fe853fb679aa6a5120</code> on the Ruby master branch.&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 <li id="fn:4" role="doc-endnote">
-<p>Ractors are an actor like concurrency framework introduced in Ruby 3.0 <a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+<p>Ractors are an actor like concurrency framework introduced in Ruby 3.0&#160;<a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 </ol>
 </section>
