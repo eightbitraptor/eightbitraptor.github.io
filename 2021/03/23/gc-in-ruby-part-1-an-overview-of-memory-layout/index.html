@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Hugo 0.92.0" />
+<meta name="generator" content="Hugo 0.94.0" />
 
 
 <title>GC in Ruby: Part 1, An overview of memory layout - eightbitraptor</title>
@@ -226,7 +226,6 @@ if ((VALUE)start % sizeof(RVALUE) != 0) {
     limit = (HEAP_PAGE_SIZE - (int)((VALUE)start - (VALUE)page_body))/(int)sizeof(RVALUE);
 }
 end = start + limit;
-
 </code></pre><p>In addition to the information above, each page also contains a pointer to the start of the freelist. The freelist is an important concept in Ruby memory management, it is a singly linked list of all the <code>T_NONE</code> slots within a page where all new <code>RVALUE</code>s get allocated.</p>
 <h3 id="the-freelist">The freelist</h3>
 <p><em><strong>NOTE:</strong> Some of this code has changed between the commit I was looking at when I wrote this and the latest trunk. Ractors, an actor-like concurrency framework was introduced in Ruby 3.0.0 - released Dec 25th 2020. This has resulted in heap pages and their freelists being cached in the context of a Ractor now. Without this exclusivity, having multiple Ractors allocate in a single freelist would have been a concurrency nightmare. I&rsquo;ll try and remember to write up something about the differences in a later post, I promise</em></p>
@@ -280,10 +279,9 @@ heap_page_add_freeobj(rb_objspace_t *objspace, struct heap_page *page, VALUE obj
 <h4 id="a-quirk-of-the-freelist-its-all-backwards">A quirk of the freelist: it&rsquo;s all backwards</h4>
 <p>When heap pages are built, first all the memory required is allocated and the slots are defined. Then the freelist is built:</p>
 <pre tabindex="0"><code class="language-c=" data-lang="c=">for (p = start; p != end; p++) {
-	gc_report(3, objspace, &quot;assign_heap_page: %p is added to freelist\n&quot;, (void *)p);
+	gc_report(3, objspace, &#34;assign_heap_page: %p is added to freelist\n&#34;, (void *)p);
 	heap_page_add_freeobj(objspace, page, (VALUE)p);
 }
-
 </code></pre><p>Looking at that loop it might not be immediately obvious, but we&rsquo;re walking up the page, from start to end and calling <code>heap_page_add_freeobj</code>; which we know adds the slot to the <em>front</em> of the freelist.</p>
 <p>This means that the first slot on the freelist is actually the last slot, contiguously, on the page. Walking <em>up</em> the freelist, by traversing <code>next</code> pointers, is actually walking down the page, by memory address.</p>
 <p>This doesn&rsquo;t really have much impact on the general functioning of the freelist, but it can cause some headaches if (like me), your work is very dependant on contiguous regions of memory.</p>
@@ -323,7 +321,7 @@ Init_heap(void)
 heap_page_create(rb_objspace_t *objspace)
 {
     struct heap_page *page;
-    const char *method = &quot;recycle&quot;;
+    const char *method = &#34;recycle&#34;;
 
     heap_allocatable_pages--;
 
@@ -331,7 +329,7 @@ heap_page_create(rb_objspace_t *objspace)
 
     if (page == NULL) {
 	page = heap_page_allocate(objspace);
-	method = &quot;allocate&quot;;
+	method = &#34;allocate&#34;;
     }
 
     return page;

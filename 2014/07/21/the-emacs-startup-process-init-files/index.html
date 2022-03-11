@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Hugo 0.92.0" />
+<meta name="generator" content="Hugo 0.94.0" />
 
 
 <title>The Emacs startup process: Init files - eightbitraptor</title>
@@ -124,7 +124,7 @@ use the same keys. You can prevent <code>site-start</code> from being required,
 but because it runs before your config file you have to do it using by
 passing the <code>--no-site-file</code> argument when you start Emacs.</p>
 <p>The <code>default</code> file gets loaded after your Emacs configuration, so it
-provides a way of clobbering users' custom settings or providing extra
+provides a way of clobbering users&rsquo; custom settings or providing extra
 config that they may have forgotten. This is not something you should
 rely on however, as it&rsquo;s possible by bypass loading this file.</p>
 <p>If you set the variable <code>inhibit-default-init</code> to something non-<code>nil</code>

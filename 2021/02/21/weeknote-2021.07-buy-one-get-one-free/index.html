@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Hugo 0.92.0" />
+<meta name="generator" content="Hugo 0.94.0" />
 
 
 <title>Weeknote 2021.07: Buy one, get one free - eightbitraptor</title>
@@ -146,7 +146,7 @@ corruption issue.</p>
 <p>I may have mentioned this before by the memory layout in Ruby&rsquo;s GC consists
 of a region of consecutive 40 byte chunks (called &ldquo;slots&rdquo;). I have one slot
 that contains the object in question and the following three slots contain
-metadata for the object - we&rsquo;ll call these chunks collectively &lsquo;the payload&rsquo;.
+metadata for the object - we&rsquo;ll call these chunks collectively &rsquo;the payload&rsquo;.
 At the start of the payload region we have a 16 byte area for metadata about
 the payload, it&rsquo;s length and so on - and then we go straight into the
 arbitrary payload data.</p>
