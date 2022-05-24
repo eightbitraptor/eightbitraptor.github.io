@@ -6,7 +6,17 @@
     <description>Recent content on eightbitraptor</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-gb</language>
-    <lastBuildDate>Tue, 20 Apr 2021 22:14:18 +0100</lastBuildDate><atom:link href="https://www.eightbitraptor.com/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 24 May 2022 21:29:13 +0100</lastBuildDate><atom:link href="https://www.eightbitraptor.com/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Weird Ruby: Using `SUPPORT_JOKE` to actually help!</title>
+      <link>https://www.eightbitraptor.com/2022/05/24/weird-ruby-using-support_joke-to-actually-help/</link>
+      <pubDate>Tue, 24 May 2022 21:29:13 +0100</pubDate>
+      
+      <guid>https://www.eightbitraptor.com/2022/05/24/weird-ruby-using-support_joke-to-actually-help/</guid>
+      <description>So, Ruby, for whatever reason, has a bunch of easter eggs hidden in its VM. There is the  __goto__ and __label__ syntax; for when you really really need a goto statement in your program! And there are also a couple of specific VM instructions that you can optionally enable.
+To enable all this you need to hardcode the OPT_SUPPORT_JOKE preprocessor constant in vm_opts.h to 1 (it defaults to 0 obviously).</description>
+    </item>
+    
     <item>
       <title>Brewing a DIPA: Moving from extract to all-grain Home brewing</title>
       <link>https://www.eightbitraptor.com/2021/04/20/brewing-a-dipa-moving-from-extract-to-all-grain-home-brewing/</link>
@@ -192,9 +202,9 @@ registered &lt;code&gt;eightbitraptor.com&lt;/code&gt; where I&amp;rsquo;ve been
       <pubDate>Sat, 21 Jul 2018 09:30:00 +0000</pubDate>
       
       <guid>https://www.eightbitraptor.com/about/</guid>
-      <description>Hi, I&amp;rsquo;m Matt. I was born in the early 80&amp;rsquo;s in Margate, a seaside town in the county of Kent in the UK. Currently I live in Sevenoaks; still in Kent, but closer to London; with my wife, daughter and our cat.
+      <description>Hi, I&amp;rsquo;m Matt. I was born in the early 80&amp;rsquo;s in Margate, a seaside town in the county of Kent in the UK. Currently I live in Sevenoaks; still in Kent, but closer to London; with my wife, two kids, and our cat.
 I hold a BEng (hons) in Computer Systems Engineering from the University of Kent.
-I also hold a MSc in Broadband and Mobile Communication Networks from the same University after my undergraduate supervisor applied for EPSRC funding on my behalf (and without my knowledge, it was a pleasant surprise).</description>
+I also hold a MSc in Broadband and Mobile Communication Networks from the same University after my undergraduate supervisor applied for EPSRC funding on my behalf (and without my knowledge), it was a pleasant surprise, that enabled me to afford to continue to study.</description>
     </item>
     
     <item>
