@@ -85,7 +85,7 @@ also a couple of specific VM instructions that you can optionally enable.</p>
 <p>To enable all this you need to hardcode the <code>OPT_SUPPORT_JOKE</code>
 preprocessor constant in <code>vm_opts.h</code> to <code>1</code> (it defaults to <code>0</code> obviously).</p>
 <p>As an aside: this variable <em>is</em> all wired up via the autotools, but setting it
-the normal way using <code>cppflags=&quot;-DOPT_SUPPORT_JOKE=1&quot;</code> doesn&rsquo;t work, becuase the
+the normal way using <code>cppflags=&quot;-DOPT_SUPPORT_JOKE=1&quot;</code> doesn&rsquo;t work, because the
 Ruby script that parses the VMs instruction definition DSL into actual C
 code relies on grepping the content of <code>vm_opts.h</code> for its optional values, but
 when you use <code>cflags</code>, they&rsquo;re effectively configured in the memory of a
