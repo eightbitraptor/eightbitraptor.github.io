@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.97.3" />
+
+
+<title>Using Ruby&#39;s dump flag to read bytecode doesn&#39;t give you the whole picture - eightbitraptor</title>
+<meta property="og:title" content="Using Ruby&#39;s dump flag to read bytecode doesn&#39;t give you the whole picture">
+<meta property="twitter:title" content="Using Ruby&#39;s dump flag to read bytecode doesn&#39;t give you the whole picture">
+
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2022-05-22">
+<meta property="article:author" content="https://www.eightbitraptor.com/about/">
+
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:site" content="@eightbitraptor">
+<meta name="twitter:creator" content="@eightbitraptor">
+<meta name="twitter:image" content="https://www.eightbitraptor.com/images/avatar.png">
+
+
+
+
+  <link href='https://www.eightbitraptor.com/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+<link rel="icon" href="https://www.eightbitraptor.com/images/favicon.ico" type="image/x-icon"/>
+<link rel="stylesheet" href="https://www.eightbitraptor.com/css/main.css" media="all">
+<link rel="stylesheet" href="https://www.eightbitraptor.com/css/lastfm.css" media="all">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Merriweather:400|Lato:400,400italic,700">
+<script src="https://www.eightbitraptor.com/js/lastfm.js"></script>
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="https://www.eightbitraptor.com/" class="nav-logo">
+    <img src="https://www.eightbitraptor.com/images/avatar.png"
+         width="100"
+         height="100"
+         alt="eightbitraptor.com">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://www.github.com/eightbitraptor">GitHub</a></li>
+    
+    <li><a href="https://wiki.eightbitraptor.com">Wiki</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">4 min read</span>
+    
+
+    <h1 class="article-title">Using Ruby&#39;s dump flag to read bytecode doesn&#39;t give you the whole picture</h1>
+
+    
+    <span class="article-date">May 25, 2022</span>
+    
+
+    <div class="article-content">
+      <p>I got <a href="https://bugs.ruby-lang.org/issues/18801">nerd sniped a little by a bug on the Ruby bug tracker</a> recently. The author (👋 Hi <a href="https://twitter.com/OngMaple">Maple</a>) noticed that whenever they looked at the instruction for certain Ruby code they always saw some instructions that looked like they were dead.</p>
+<pre tabindex="0"><code>❯ ruby --dump=insns -e &#39;while 1+2; end&#39;
+== disasm: #&lt;ISeq:&lt;main&gt;@-e:1 (1,0)-(1,14)&gt; (catch: FALSE)
+0000 jump                                   4                         (   1)[Li]
+0002 putnil
+0003 pop
+0004 putobject_INT2FIX_1_
+0005 putobject                              2
+0007 opt_plus                               &lt;calldata!mid:+, argc:1, ARGS_SIMPLE&gt;[CcCr]
+0009 branchif                               4
+0011 putnil
+0012 leave
+</code></pre><p>The instructions in question are the <code>putnil</code> and <code>pop</code> at positions <code>0002</code> and <code>0003</code>. There are seemingly 2 problems with this:</p>
+<ol>
+<li>the <code>putnil</code> and <code>pop</code> are immediately after an unconditional jump, that jumps over them, there&rsquo;s nothing there that jumps back so they&rsquo;re not going to get executed.</li>
+<li>Even if they were going to get executed, they&rsquo;re seemingly a no-op</li>
+</ol>
+<p>The purpose of this post is not to answer those questions (I did some digging in the bug ticked linked above if you&rsquo;re curious where I got to), but instead to point out that using <code>--dump=insns</code> as we&rsquo;re doing here doesn&rsquo;t show the whole picture.</p>
+<p>In the bytecode above all those jump instructions are just given offsets in the instruction sequence to jump to, but as we&rsquo;re building the sequence we don&rsquo;t really know what those offsets will be. So instead we insert labels into the bytecode that are used as jump targets, and then, when we jump, we jump to a label.</p>
+<p>Part of the compilation process is about taking those labels and turning them into offsets into our final instruction sequence and then stripping the actual labels so they don&rsquo;t appear in our final bytecode.</p>
+<p>But in cases like this it&rsquo;s interesting to see the labels, because doing so will tell us more about the possible uses of bytecode that seemingly doesn&rsquo;t make sense. Whether or not we can observe a jump happening to a place, it&rsquo;s interesting to know whether it&rsquo;s <em>even possible</em> for a jump to target that place!</p>
+<p>There&rsquo;s another way to visualise Ruby bytecode, one that I often overlook because it&rsquo;s more cumbersome to use than <code>--dump=insns</code>, and that&rsquo;s <code>RubyVM::InstructionSequence.compile</code>.</p>
+<p>In order to use <code>RubyVM::InstructionSequence</code> to generate the bytecode listing above we can do this:</p>
+<pre tabindex="0"><code>❯ ruby -e &#34;puts RubyVM::InstructionSequence.compile(&#39;while 1+2; end&#39;).disasm&#34;
+== disasm: #&lt;ISeq:&lt;compiled&gt;@&lt;compiled&gt;:1 (1,0)-(1,14)&gt; (catch: FALSE)
+0000 jump                                   4                         (   1)[Li]
+0002 putnil
+0003 pop
+0004 putobject_INT2FIX_1_
+0005 putobject                              2
+0007 opt_plus                               &lt;calldata!mid:+, argc:1, ARGS_SIMPLE&gt;[CcCr]
+0009 branchif                               4
+0011 putnil
+0012 leave
+</code></pre><p>Great! So that&rsquo;s a lot more typing for no appreciable benefit. But if we take a look at the <code>RubyVM::InstructionSequence</code> object we&rsquo;re calling <code>disasm</code> on, then things get a lot more interesting</p>
+<pre tabindex="0"><code>irb(main):001:0&gt; RubyVM::InstructionSequence.compile(&#39;while 1+2; end&#39;).to_a
+=&gt; 
+[&#34;YARVInstructionSequence/SimpleDataFormat&#34;,                                 
+ 3,
+ 1,
+ 1,
+ {:arg_size=&gt;0,
+  :local_size=&gt;0,
+  :stack_max=&gt;2,
+  :node_id=&gt;6,
+  :code_location=&gt;[1, 0, 1, 14],
+  :node_ids=&gt;[5, 5, 5, 0, 1, 3, 3, 5, -1]},
+ &#34;&lt;compiled&gt;&#34;,
+ &#34;&lt;compiled&gt;&#34;,
+ &#34;&lt;compiled&gt;&#34;,
+ 1,
+ :top,
+ [],
+ {},
+ [],
+ [1,
+  :RUBY_EVENT_LINE,
+  [:jump, :label_4],
+  [:putnil],
+  [:pop],
+  :label_4,
+  [:putobject_INT2FIX_1_],
+  [:putobject, 2],
+  [:opt_plus, {:mid=&gt;:+, :flag=&gt;16, :orig_argc=&gt;1}],
+  [:branchif, :label_4],
+  [:putnil],
+  [:leave]]]
+</code></pre><p>Woah! What&rsquo;s all this stuff then? <a href="https://docs.ruby-lang.org/en/master/RubyVM/InstructionSequence.html#method-i-to_a">You can read about it all in the Ruby docs</a> but that&rsquo;s a lot of information!</p>
+<p>Cutting to the chase, the last Array that&rsquo;s returned shows us the actual instruction list that is going to get executed as part of this instruction sequence. Hopefully you can see how it maps to the <code>disasm</code> and <code>dump</code> output above. But look - there are labels in this one too. We can clearly see where <code>:label_4</code> is being defined, and a jump to it.</p>
+<p>This is going to help us with our debugging as we&rsquo;ll now be able to see that in some cases, there is in fact, a jump target between those two seemingly dead instructions, which we can use to aid us in our sleuthing.</p>
+<pre tabindex="0"><code>irb(main):007:0&gt; RubyVM::InstructionSequence.compile(&#39;while 1+2; class A; next; end; end&#39;).to_a.last.map { |e| puts
+ e.inspect };nil
+1
+:RUBY_EVENT_LINE                                                                                                   
+[:jump, :label_14]                                                                                                 
+[:putnil]                                                                                                          
+:label_3                                                                                                           
+[:pop]                                                                                                             
+[:jump, :label_14]                                                                                                 
+:label_6
+</code></pre><p>So, in summary. <code>--dump=insns</code> and <code>--dump=insns_without_opt</code> are still really useful tools (and I&rsquo;ll continue to use them by default). But, if you&rsquo;re scratching your head at a Ruby instruction sequence, then definitely check out the <code>RubyVM::InstructionSequence</code> directly - there&rsquo;s more that it can show you.</p>
+
+    </div>
+  </article>
+
+  
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with Hugo</a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+

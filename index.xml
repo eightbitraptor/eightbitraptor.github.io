@@ -6,7 +6,17 @@
     <description>Recent content on eightbitraptor</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-gb</language>
-    <lastBuildDate>Tue, 24 May 2022 21:29:13 +0100</lastBuildDate><atom:link href="https://www.eightbitraptor.com/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 25 May 2022 13:26:46 +0100</lastBuildDate><atom:link href="https://www.eightbitraptor.com/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Using Ruby&#39;s dump flag to read bytecode doesn&#39;t give you the whole picture</title>
+      <link>https://www.eightbitraptor.com/2022/05/25/using-rubys-dump-flag-to-read-bytecode-doesnt-give-you-the-whole-picture/</link>
+      <pubDate>Wed, 25 May 2022 13:26:46 +0100</pubDate>
+      
+      <guid>https://www.eightbitraptor.com/2022/05/25/using-rubys-dump-flag-to-read-bytecode-doesnt-give-you-the-whole-picture/</guid>
+      <description>I got nerd sniped a little by a bug on the Ruby bug tracker recently. The author (👋 Hi Maple) noticed that whenever they looked at the instruction for certain Ruby code they always saw some instructions that looked like they were dead.
+❯ ruby --dump=insns -e &amp;#39;while 1+2; end&amp;#39; == disasm: #&amp;lt;ISeq:&amp;lt;main&amp;gt;@-e:1 (1,0)-(1,14)&amp;gt; (catch: FALSE) 0000 jump 4 ( 1)[Li] 0002 putnil 0003 pop 0004 putobject_INT2FIX_1_ 0005 putobject 2 0007 opt_plus &amp;lt;calldata!</description>
+    </item>
+    
     <item>
       <title>Weird Ruby: Using `SUPPORT_JOKE` to actually help!</title>
       <link>https://www.eightbitraptor.com/2022/05/24/weird-ruby-using-support_joke-to-actually-help/</link>

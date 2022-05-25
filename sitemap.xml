@@ -3,7 +3,10 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://www.eightbitraptor.com/</loc>
-    <lastmod>2022-05-24T21:29:13+01:00</lastmod>
+    <lastmod>2022-05-25T13:26:46+01:00</lastmod>
+  </url><url>
+    <loc>https://www.eightbitraptor.com/2022/05/25/using-rubys-dump-flag-to-read-bytecode-doesnt-give-you-the-whole-picture/</loc>
+    <lastmod>2022-05-25T13:26:46+01:00</lastmod>
   </url><url>
     <loc>https://www.eightbitraptor.com/2022/05/24/weird-ruby-using-support_joke-to-actually-help/</loc>
     <lastmod>2022-05-24T21:29:13+01:00</lastmod>
