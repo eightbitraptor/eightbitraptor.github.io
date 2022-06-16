@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.97.3" />
+
+
+<title>Signal handling in LLDB - eightbitraptor</title>
+<meta property="og:title" content="Signal handling in LLDB">
+<meta property="twitter:title" content="Signal handling in LLDB">
+
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2022-06-22">
+<meta property="article:author" content="https://www.eightbitraptor.com/about/">
+
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:site" content="@eightbitraptor">
+<meta name="twitter:creator" content="@eightbitraptor">
+<meta name="twitter:image" content="https://www.eightbitraptor.com/images/avatar.png">
+
+
+
+
+  <link href='https://www.eightbitraptor.com/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+<link rel="icon" href="https://www.eightbitraptor.com/images/favicon.ico" type="image/x-icon"/>
+<link rel="stylesheet" href="https://www.eightbitraptor.com/css/main.css" media="all">
+<link rel="stylesheet" href="https://www.eightbitraptor.com/css/lastfm.css" media="all">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Merriweather:400|Lato:400,400italic,700">
+<script src="https://www.eightbitraptor.com/js/lastfm.js"></script>
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="https://www.eightbitraptor.com/" class="nav-logo">
+    <img src="https://www.eightbitraptor.com/images/avatar.png"
+         width="100"
+         height="100"
+         alt="eightbitraptor.com">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://www.github.com/eightbitraptor">GitHub</a></li>
+    
+    <li><a href="https://wiki.eightbitraptor.com">Wiki</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">2 min read</span>
+    
+
+    <h1 class="article-title">Signal handling in LLDB</h1>
+
+    
+    <span class="article-date">June 16, 2022</span>
+    
+
+    <div class="article-content">
+      <p>I don&rsquo;t normally worry about signal handling in lldb. I don&rsquo;t often work on
+codebases that do significant work with them, and so if a signal is raised then
+it&rsquo;s a rare enough occurence that the lldb breaking on it seems like a sane
+default.</p>
+<p>However, very occasionally I end up in the situation where I have to debug code
+that raises a lot of signals that I know I don&rsquo;t have to care about.</p>
+<p>In this case it&rsquo;s useful to be able to tell lldb what to do (or not do) with
+them.</p>
+<p>By default running <code>process handle</code> will give you a list of all the available
+signals and some default actions:</p>
+<pre tabindex="0"><code>(lldb) process handle
+NAME         PASS   STOP   NOTIFY
+===========  =====  =====  ======
+SIGHUP       true   true   true
+SIGINT       false  true   true
+SIGQUIT      true   true   true
+SIGILL       true   true   true
+...
+</code></pre><p>In this output <code>PASS</code> means to pass it through to the underlying process,
+<code>STOP</code> indicates whether lldb should break on that signal and <code>NOTIFY</code> allows
+us to configure whether we&rsquo;ll be told about any signals raised.</p>
+<p>We can configure these values.</p>
+<pre tabindex="0"><code>(lldb) process handle -p true -s false -n true SIGINT
+</code></pre><p>This tells lldb to notify us (<code>-n true</code>) when a SIGINT is raised, and then pass
+it through the process (<code>-p true</code>), but don&rsquo;t stop the debugger (<code>-s false</code>).</p>
+<p>I don&rsquo;t know what I&rsquo;m going to do with all the time I&rsquo;ve saved now I don&rsquo;t have
+to continually press c to continue!</p>
+
+    </div>
+  </article>
+
+  
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with Hugo</a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+

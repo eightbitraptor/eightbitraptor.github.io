@@ -6,7 +6,17 @@
     <description>Recent content on eightbitraptor</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-gb</language>
-    <lastBuildDate>Wed, 25 May 2022 13:26:46 +0100</lastBuildDate><atom:link href="https://www.eightbitraptor.com/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 16 Jun 2022 20:00:46 +0100</lastBuildDate><atom:link href="https://www.eightbitraptor.com/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Signal handling in LLDB</title>
+      <link>https://www.eightbitraptor.com/2022/06/16/signal-handling-in-lldb/</link>
+      <pubDate>Thu, 16 Jun 2022 20:00:46 +0100</pubDate>
+      
+      <guid>https://www.eightbitraptor.com/2022/06/16/signal-handling-in-lldb/</guid>
+      <description>I don&amp;rsquo;t normally worry about signal handling in lldb. I don&amp;rsquo;t often work on codebases that do significant work with them, and so if a signal is raised then it&amp;rsquo;s a rare enough occurence that the lldb breaking on it seems like a sane default.
+However, very occasionally I end up in the situation where I have to debug code that raises a lot of signals that I know I don&amp;rsquo;t have to care about.</description>
+    </item>
+    
     <item>
       <title>Using Ruby&#39;s dump flag to read bytecode doesn&#39;t give you the whole picture</title>
       <link>https://www.eightbitraptor.com/2022/05/25/using-rubys-dump-flag-to-read-bytecode-doesnt-give-you-the-whole-picture/</link>
