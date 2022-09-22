@@ -33,7 +33,7 @@ However, very occasionally I end up in the situation where I have to debug code 
       <pubDate>Tue, 24 May 2022 21:29:13 +0100</pubDate>
       
       <guid>https://www.eightbitraptor.com/2022/05/24/weird-ruby-using-support_joke-to-actually-help/</guid>
-      <description>So, Ruby, for whatever reason, has a bunch of easter eggs hidden in its VM. There is the  __goto__ and __label__ syntax; for when you really really need a goto statement in your program! And there are also a couple of specific VM instructions that you can optionally enable.
+      <description>So, Ruby, for whatever reason, has a bunch of easter eggs hidden in its VM. There is the __goto__ and __label__ syntax; for when you really really need a goto statement in your program! And there are also a couple of specific VM instructions that you can optionally enable.
 To enable all this you need to hardcode the OPT_SUPPORT_JOKE preprocessor constant in vm_opts.h to 1 (it defaults to 0 obviously).</description>
     </item>
     
@@ -73,7 +73,7 @@ I&amp;rsquo;m assuming that a huge proportion of the folks reading this post are
       
       <guid>https://www.eightbitraptor.com/2021/03/08/weeknote-2021.09-elaborately-carved-metals/</guid>
       <description>I&amp;rsquo;ve been listening to a lot of music this week. Rediscovered an old favourite of mine: Cult of Luna. I had no idea they were still making music, I used to listen to these guys in my first year of Uni. Turns out their latest album is an absolute banger.
-  A friend and work colleague switched to Vim recently, and asked me for some advice on learning it.</description>
+A friend and work colleague switched to Vim recently, and asked me for some advice on learning it. It made me remember some of the features that I love about the editor and why I still enjoy using it even though it&amp;rsquo;s a million years old in programming standards.</description>
     </item>
     
     <item>
@@ -83,8 +83,8 @@ I&amp;rsquo;m assuming that a huge proportion of the folks reading this post are
       
       <guid>https://www.eightbitraptor.com/2021/03/01/weeknote-2021.08-sweat-the-small-stuff/</guid>
       <description>Not much to report again this week. Still waiting on keyboard PCB&amp;rsquo;s so no change on that front.
-  Did knock up a quick 3d print case design loosely based on the old IBM F62 Kishsaver design. haven&amp;rsquo;t finished printing and assembling it yet so no pics for now; I don&amp;rsquo;t want to ruin the surprise.
-  After a bit of an abortive start last time. I started to run again.</description>
+Did knock up a quick 3d print case design loosely based on the old IBM F62 Kishsaver design. haven&amp;rsquo;t finished printing and assembling it yet so no pics for now; I don&amp;rsquo;t want to ruin the surprise.
+After a bit of an abortive start last time. I started to run again. I&amp;rsquo;ve scaled back a bit and been a bit more thoughtful about the process.</description>
     </item>
     
     <item>
@@ -133,7 +133,7 @@ I mainly don&amp;rsquo;t like the snow because I have the balance of a drunk gna
       
       <guid>https://www.eightbitraptor.com/2021/01/16/weeknotes-2021.02-vaguely-sketchy/</guid>
       <description>I failed to take many notes this week so I&amp;rsquo;m going to be doing this from memory. Honestly not a ringing endorsement of my ability to keep up this weeknotes thing, but at least this post made it onto the internet on time so maybe that&amp;rsquo;s enough for now?
-  I&amp;rsquo;m still in touch with the lovely man at the running shop. He watched my video, assessed that I do something called overpronating and then dropped round 3 pairs of shoes which I&amp;rsquo;ve been wearing around the house for the last week.</description>
+I&amp;rsquo;m still in touch with the lovely man at the running shop. He watched my video, assessed that I do something called overpronating and then dropped round 3 pairs of shoes which I&amp;rsquo;ve been wearing around the house for the last week.</description>
     </item>
     
     <item>
