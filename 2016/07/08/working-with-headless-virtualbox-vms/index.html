@@ -1,83 +1,165 @@
 <!DOCTYPE html>
-<html lang="en-gb">
-  <head>
-    <meta charset="utf-8">
+<html lang="en">
+<head>
+  
+    <title>Working with headless VirtualBox VM&#39;s :: www.eightbitraptor.com</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Hugo 0.104.3" />
+<meta name="description" content="I spend a lot of time using both OSX and Linux. Personally I tend to prefer using Linux, however my work have provided me with a MacBook Pro and in order to make working with my colleagues as pain free as possible, I use OSX on it.
+I still like to do a lot of work that relies on being on Linux however, and there are a bunch of ways to acheive this." />
+<meta name="keywords" content="" />
+<meta name="robots" content="noodp" />
 
-
-<title>Working with headless VirtualBox VM&#39;s - eightbitraptor</title>
-<meta property="og:title" content="Working with headless VirtualBox VM&#39;s">
-<meta property="twitter:title" content="Working with headless VirtualBox VM&#39;s">
-
-<meta property="og:type" content="article">
-<meta property="article:published_time" content="2016-07-16">
-<meta property="article:author" content="https://www.eightbitraptor.com/about/">
-
-<meta name="twitter:card" content="summary" />
-<meta name="twitter:site" content="@eightbitraptor">
-<meta name="twitter:creator" content="@eightbitraptor">
-<meta name="twitter:image" content="https://www.eightbitraptor.com/images/avatar.png">
+<link rel="canonical" href="https://www.eightbitraptor.com/2016/07/08/working-with-headless-virtualbox-vms/" />
 
 
 
-
-  <link href='https://www.eightbitraptor.com/favicon.ico' rel='icon' type='image/x-icon'/>
 
 
 
   
+  
+  
+  
+  
+  <link rel="stylesheet" href="https://www.eightbitraptor.com/styles.css">
 
 
 
 
-<link rel="icon" href="https://www.eightbitraptor.com/images/favicon.ico" type="image/x-icon"/>
-<link rel="stylesheet" href="https://www.eightbitraptor.com/css/main.css" media="all">
-<link rel="stylesheet" href="https://www.eightbitraptor.com/css/lastfm.css" media="all">
-<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Merriweather:400|Lato:400,400italic,700">
-<script src="https://www.eightbitraptor.com/js/lastfm.js"></script>
 
-  </head>
-  <body>
-    <div class="wrapper">
-      <header class="header">
-        <nav class="nav">
-  <a href="https://www.eightbitraptor.com/" class="nav-logo">
-    <img src="https://www.eightbitraptor.com/images/avatar.jpeg"
-         width="100"
-         height="100"
-         alt="eightbitraptor.com">
-  </a>
 
-  <ul class="nav-links">
+
+  <link rel="shortcut icon" href="https://www.eightbitraptor.com/favicon.ico">
+
+
+
+<meta name="twitter:card" content="summary" />
+
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Working with headless VirtualBox VM&#39;s">
+<meta property="og:description" content="I spend a lot of time using both OSX and Linux. Personally I tend to prefer using Linux, however my work have provided me with a MacBook Pro and in order to make working with my colleagues as pain free as possible, I use OSX on it.
+I still like to do a lot of work that relies on being on Linux however, and there are a bunch of ways to acheive this." />
+<meta property="og:url" content="https://www.eightbitraptor.com/2016/07/08/working-with-headless-virtualbox-vms/" />
+<meta property="og:site_name" content="www.eightbitraptor.com" />
+
+  
+    <meta property="og:image" content="https://www.eightbitraptor.com/favicon.ico">
+  
+
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="627">
+
+
+  <meta property="article:published_time" content="2016-07-08 09:30:00 &#43;0000 UTC" />
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body class="pink">
+
+
+<div class="container headings--one-size">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="site-title">
+    www.eightbitraptor.com
+  </div>
+</a>
+
+    </div>
     
-    <li><a href="/about/">About</a></li>
+      <ul class="menu menu--mobile">
+  <li class="menu__trigger">Menu&nbsp;▾</li>
+  <li>
+    <ul class="menu__dropdown">
+      
+        
+          <li><a href="/about">About</a></li>
+        
+      
+        
+          <li><a href="https://wiki.eightbitraptor.com">Wiki</a></li>
+        
+      
+      
+    </ul>
+  </li>
+</ul>
+
     
-    <li><a href="https://www.github.com/eightbitraptor">GitHub</a></li>
     
-    <li><a href="https://wiki.eightbitraptor.com">Wiki</a></li>
+  </div>
+  
+    <nav class="navigation-menu">
+  <ul class="navigation-menu__inner menu--desktop">
+    
+      
+        
+          <li><a href="/about">About</a></li>
+        
+      
+        
+          <li><a href="https://wiki.eightbitraptor.com">Wiki</a></li>
+        
+      
     
   </ul>
 </nav>
 
-      </header>
+  
+</header>
 
 
-<main class="content" role="main">
-
-  <article class="article">
+  <div class="content">
     
-    <span class="article-duration">5 min read</span>
+<article class="post">
+  <h1 class="post-title">
+    <a href="https://www.eightbitraptor.com/2016/07/08/working-with-headless-virtualbox-vms/">Working with headless VirtualBox VM&rsquo;s</a>
+  </h1>
+  <div class="post-meta">
     
-
-    <h1 class="article-title">Working with headless VirtualBox VM&#39;s</h1>
-
+      <time class="post-date">
+        2016-07-08 ::
+        
+      </time>
     
-    <span class="article-date">July 8, 2016</span>
     
+    
+  </div>
 
-    <div class="article-content">
-      <p>I spend a lot of time using both OSX and Linux. Personally I tend to prefer using Linux, however my work have provided me with a MacBook Pro and in order to make working with my colleagues as pain free as possible, I use OSX on it.</p>
+  
+    <span class="post-tags">
+      
+      #<a href="https://www.eightbitraptor.com/tags/virtualisation/">virtualisation</a>&nbsp;
+      
+      #<a href="https://www.eightbitraptor.com/tags/tools/">tools</a>&nbsp;
+      
+    </span>
+  
+  
+
+
+  
+
+  <div class="post-content"><div>
+        <p>I spend a lot of time using both OSX and Linux. Personally I tend to prefer using Linux, however my work have provided me with a MacBook Pro and in order to make working with my colleagues as pain free as possible, I use OSX on it.</p>
 <p>I still like to do a lot of work that relies on being on Linux however, and there are a bunch of ways to acheive this.</p>
 <ol>
 <li>Dual boot my MacBook - I tried this for 6 months. It&rsquo;s complex and annoying to get set up and configure and half of the hardware doesn&rsquo;t work properly anyway (I tried, and failed to make a dual screen setup useable when one of the screens is a retina display).</li>
@@ -86,7 +168,7 @@
 </ol>
 <p>I went with option 3, with some tweaks. I run all my VM&rsquo;s using VirtualBox, in headless mode, so there&rsquo;s no extra window and no GUI. I can then <code>ssh</code> into them from my OSX terminal, which makes integration with my Mac&rsquo;s paste buffer a lot more seamless, as well as meaning I can work in my OSX terminal, which at this point is configured how I like it. I also use VirtualBox shared folders feature to share source code directories on my mac directly with the VM. This means I can use my local OSX installed instance of Emacs to work on these projects, which is definitely a good thing.</p>
 <p>This post assumes that you&rsquo;ve already installed VirtualBox, and created a VM onto which you have installed your Linux distro of choice, and also installed the VirtualBox guest additions package into that guest OS. All instructions here are written for Fedora, as that&rsquo;s my preferred Linux distribution these days. They should work on other distro&rsquo;s with minor modification although package names will probably be different.</p>
-<h3 id="configuring-ssh-port-forwarding">configuring SSH port forwarding</h3>
+<h3 id="configuring-ssh-port-forwarding">configuring SSH port forwarding<a href="#configuring-ssh-port-forwarding" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>The first thing you&rsquo;ll need to do is boot your VM normally (with the GUI), log in and install an OpenSSH server</p>
 <pre><code>sudo dnf install openssh
 sudo systemctl start sshd
@@ -103,7 +185,7 @@ VBoxManage modifyvm &quot;Fedora Dev&quot; --natpf1 &quot;guestssh,tcp,,3021,,22
 <pre><code>VBoxManage startvm &quot;Fedora Dev&quot; --type headless
 ssh -p 3021 username@localhost
 </code></pre>
-<h3 id="configuring-shared-folders">Configuring shared folders</h3>
+<h3 id="configuring-shared-folders">Configuring shared folders<a href="#configuring-shared-folders" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>VirtualBox has a feature that can share folders from your host OS into your guest. In Linux guests the folders appear as block devices that can be mounted wherever you require. It also has the ability to auto-mount these filesystems at boot. We&rsquo;re not going to do this as the VirtualBox UI isn&rsquo;t very configurable.</p>
 <p>First create a &lsquo;shared folder&rsquo;, this will create a mountable block device on the guest.</p>
 <pre><code>VBoxManage sharedfolder add &quot;Fedora Dev&quot; -name &quot;test_project&quot; \
@@ -122,31 +204,77 @@ ssh -p 3021 username@localhost
 echo &quot;vboxsf&quot; &gt;&gt; /etc/modules.d/vbox.conf
 </code></pre>
 <p>Now that the module is configured to load on boot, you can shutdown the machine and start it up again in headless mode using the command above. You should now be able to edit your source code using your favourite editor on the host system, and do your compilation tasks and testing through the ssh connection on the Linux guest.</p>
-<h3 id="running-x11-applications">Running X11 applications</h3>
+<h3 id="running-x11-applications">Running X11 applications<a href="#running-x11-applications" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>If you have a server that&rsquo;s running in headless mode, but you want to be able to run GUI applications you can run <code>ssh</code> with X11 forwarding. To do this you&rsquo;ll need an X server running on your OSX host machine. I use <a href="https://www.xquartz.org">XQuartz</a>. Download and install the latest version of XQuartz and then connect to your server using ssh, as above, but also pass the <code>-X</code> flag</p>
 <pre><code>ssh -X -p 3021 username@localhost
 </code></pre>
 <p>Now, you can run gui apps from the command line and you should see XQuartz start up and the application will appear as a normal window on your OSX Desktop. I tested this out on my machine using the command <code>gedit &amp;</code> to start gedit in the background and give me my terminal back.</p>
 
+      </div></div>
+
+  
+    
+<div class="pagination">
+    <div class="pagination__title">
+        <span class="pagination__title-h">Read other posts</span>
+        <hr />
     </div>
-  </article>
+    <div class="pagination__buttons">
+        
+        <span class="button previous">
+            <a href="https://www.eightbitraptor.com/2018/12/17/migrating-to-hugo/">
+                <span class="button__icon">←</span>
+                <span class="button__text">Migrating to Hugo</span>
+            </a>
+        </span>
+        
+        
+        <span class="button next">
+            <a href="https://www.eightbitraptor.com/2014/07/21/the-emacs-startup-process-init-files/">
+                <span class="button__text">The Emacs startup process: Init files</span>
+                <span class="button__icon">→</span>
+            </a>
+        </span>
+        
+    </div>
+</div>
 
   
 
-</main>
-
-      <footer class="footer">
-        <ul class="footer-links">
-          
-          <li>
-            <a href="https://gohugo.io/" class="footer-links-kudos">Made with Hugo</a>
-          </li>
-        </ul>
-      </footer>
-
-    </div>
-
+  
     
-  </body>
-</html>
 
+  
+</article>
+
+  </div>
+
+  
+    <footer class="footer">
+  <div class="footer__inner">
+    
+      <div class="copyright copyright--user">
+        <span>Matt Valentine-House</span>
+    
+      <span> :: <a href="https://github.com/panr/hugo-theme-terminal" target="_blank">Theme</a> made by <a href="https://github.com/panr" target="_blank">panr</a>, heavily modified by <a href="/">eightbitraptor</a></span>
+      </div>
+  </div>
+</footer>
+
+
+
+
+
+
+
+<script type="text/javascript" src="/bundle.min.js"></script>
+
+
+
+
+
+  
+</div>
+
+</body>
+</html>
