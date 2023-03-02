@@ -413,14 +413,14 @@ heap_page_create(rb_objspace_t *objspace)
 <p>We know that the heap and its pages keep track of all the free slots in a freelist, which we can use to quickly find a place in which we can assign a new object. And we know that when an object is no longer needed Ruby will push that object back onto the freelist so we can use it again later.</p>
 <p>We haven&rsquo;t yet talked about when an object would be removed, and how that happens. In the next post we&rsquo;ll inroduce the idea of garbage collection. We&rsquo;ll talk about how Ruby determines Object liveness, how the two phases of the main Mark &amp; Sweep algorithm work together to remove objects that are no longer used and return their space back to the freelist. We&rsquo;ll also talk on the various ways that GC can be triggered, whether manually, or automatically during the lifetime of your programs.</p>
 <p>Lastly we&rsquo;ll talk about some of the limitations of Mark &amp; Sweep, the ways in which they can be mitigated against and introduce some of the concepts Ruby uses to do so, which we&rsquo;ll explore in the rest of this series.</p>
-<section class="footnotes" role="doc-endnotes">
+<div class="footnotes" role="doc-endnotes">
 <hr>
 <ol>
-<li id="fn:1" role="doc-endnote">
+<li id="fn:1">
 <p>I&rsquo;ll use &ldquo;Ruby&rdquo; a lot in this post. I know that there are many Rubies in the world and that I&rsquo;m only talking about one, and so the generic use of Ruby may be incorrect. But it&rsquo;s prudent to bear in mind that everything I talk about here applies specifically to the default Ruby Implementation, started by Matz, written in C and hosted on <a href="https://www.ruby-lang.org">https://www.ruby-lang.org</a>. Other implementations may do things differently.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 </ol>
-</section>
+</div>
 
       </div></div>
 

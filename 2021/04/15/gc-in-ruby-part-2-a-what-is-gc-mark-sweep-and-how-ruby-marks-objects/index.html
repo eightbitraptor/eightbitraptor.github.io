@@ -532,23 +532,23 @@
 <p>The next function we identified, <code>gc_marks_finish</code> is primarily concerned with accounting information and is mostly not relevant to our discussion of generic Mark &amp; Sweep - it does do some cleanup of the heap and some reporting - but all the major work is now done. 🎉</p>
 <p>With that we can move on to sweeping. Which we&rsquo;re going to discuss in another post. This post ended up being way longer than I expected going into it so thank you so much for reading and congratulations on making it this far! I had a good time writing this and putting together all the material and I hope that this was a useful insight into how a real world programming language starts to implement its own automatic dynamic memory management system!</p>
 <p>Look forward to part 2b soon™ where we&rsquo;ll move on to sweeping (and maybe an intro to Generational GC if I get that far).</p>
-<section class="footnotes" role="doc-endnotes">
+<div class="footnotes" role="doc-endnotes">
 <hr>
 <ol>
-<li id="fn:1" role="doc-endnote">
+<li id="fn:1">
 <p>note that this is different to the term &lsquo;dynamic languages&rsquo;, which are languages in which operations that would traditionally be done at compile time, are done at run-time, examples of this are type checking and meta-programming. Dynamic is a pretty overused word when talking about programming languages tbh.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
-<li id="fn:2" role="doc-endnote">
+<li id="fn:2">
 <p>The abbreviation can mean both &ldquo;garbage collector&rdquo; and &ldquo;garbage collection&rdquo;. Hopefully this is obvious given the context.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
-<li id="fn:3" role="doc-endnote">
+<li id="fn:3">
 <p>Code in this article is correct as of commit <code>df7efdcb6b7fd4286fe7d1fe853fb679aa6a5120</code> on the Ruby master branch.&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
-<li id="fn:4" role="doc-endnote">
+<li id="fn:4">
 <p>Ractors are an actor like concurrency framework introduced in Ruby 3.0&#160;<a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 </ol>
-</section>
+</div>
 
       </div></div>
 
