@@ -256,15 +256,15 @@
 <p>Ruby uses an algorithm similar to this internally, but there are some differences - arising mainly because the heap is divided up into separate pages.</p>
 <p>We can see the basic shape of Ruby&rsquo;s implementation of this <code>New</code> GC hook in action by looking at the function <code>newobj_of0</code> in <code>gc.c</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> VALUE
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">newobj_of0</span>(VALUE klass, VALUE flags, <span style="color:#66d9ef">int</span> wb_protected, rb_ractor_t <span style="color:#f92672">*</span>cr)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">newobj_of0</span>(VALUE klass, VALUE flags, <span style="color:#66d9ef">int</span> wb_protected, <span style="color:#66d9ef">rb_ractor_t</span> <span style="color:#f92672">*</span>cr)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (obj <span style="color:#f92672">=</span> ractor_cached_freeobj(objspace, cr)) <span style="color:#f92672">!=</span> Qfalse) {
-</span></span><span style="display:flex;"><span>        newobj_init(klass, flags, wb_protected, objspace, obj);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (obj <span style="color:#f92672">=</span> <span style="color:#a6e22e">ractor_cached_freeobj</span>(objspace, cr)) <span style="color:#f92672">!=</span> Qfalse) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">newobj_init</span>(klass, flags, wb_protected, objspace, obj);
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span> {
 </span></span><span style="display:flex;"><span>        obj <span style="color:#f92672">=</span> wb_protected <span style="color:#f92672">?</span>
-</span></span><span style="display:flex;"><span>          newobj_slowpath_wb_protected(klass, flags, objspace, cr) <span style="color:#f92672">:</span>
-</span></span><span style="display:flex;"><span>          newobj_slowpath_wb_unprotected(klass, flags, objspace, cr);
+</span></span><span style="display:flex;"><span>          <span style="color:#a6e22e">newobj_slowpath_wb_protected</span>(klass, flags, objspace, cr) <span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#a6e22e">newobj_slowpath_wb_unprotected</span>(klass, flags, objspace, cr);
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> obj;
@@ -275,21 +275,21 @@
 <p><em>Note that, even when we&rsquo;re not explicitly using Ractors in our code behind the scenes, there is always one ractor - which Ruby refers to as the main Ractor. You can dig deeper into this by looking at the macro <code>GET_RACTOR</code> and the ractor struct <code>ruby_single_main_ractor</code>).</em></p>
 <p>If the object was not allocated successfully (ie. the call to <code>ractor_cached_freeobj</code> returns <code>Qfalse</code>), then we follow the slowpath.</p>
 <p>We&rsquo;ll discuss what it means for an object to be write-barrier protected or unprotected in a later post about Generational GC, but for this discussion they&rsquo;re not relevent. Both of these funtions eventually lead us to <code>newobj_slowpath</code> which is where the second path of our <code>New</code> job is implemented:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">while</span> ((obj <span style="color:#f92672">=</span> ractor_cached_freeobj(objspace, cr)) <span style="color:#f92672">==</span> Qfalse) {
-</span></span><span style="display:flex;"><span>    ractor_cache_slots(objspace, cr);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">while</span> ((obj <span style="color:#f92672">=</span> <span style="color:#a6e22e">ractor_cached_freeobj</span>(objspace, cr)) <span style="color:#f92672">==</span> Qfalse) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">ractor_cache_slots</span>(objspace, cr);
 </span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>GC_ASSERT(obj <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>newobj_init(klass, flags, wb_protected, objspace, obj);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">GC_ASSERT</span>(obj <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">newobj_init</span>(klass, flags, wb_protected, objspace, obj);
 </span></span></code></pre></div><p>There&rsquo;s a bit of indirection here - We&rsquo;re going to need to follow the rabbit hole a little deeper before we find out whether we actually need to run GC.</p>
 <p>In our first variation from our naive <code>New</code> implementation we actually attempt the allocation again multiple times instead of just once, by calling <code>ractor_cached_freeobj</code> and <code>ractor_cache_slots</code> in a loop until we get a free slot back successfully.</p>
 <p>The job of <code>ractor_cache_slots</code> is to find the next page in the heap that has free slots and cache it onto the ractor.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ractor_cache_slots</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace, rb_ractor_t <span style="color:#f92672">*</span>cr)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ractor_cache_slots</span>(<span style="color:#66d9ef">rb_objspace_t</span> <span style="color:#f92672">*</span>objspace, <span style="color:#66d9ef">rb_ractor_t</span> <span style="color:#f92672">*</span>cr)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>   ASSERT_vm_locking();
-</span></span><span style="display:flex;"><span>   GC_ASSERT(cr<span style="color:#f92672">-&gt;</span>newobj_cache.freelist <span style="color:#f92672">==</span> NULL);
+</span></span><span style="display:flex;"><span>   <span style="color:#a6e22e">ASSERT_vm_locking</span>();
+</span></span><span style="display:flex;"><span>   <span style="color:#a6e22e">GC_ASSERT</span>(cr<span style="color:#f92672">-&gt;</span>newobj_cache.freelist <span style="color:#f92672">==</span> NULL);
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">struct</span> heap_page <span style="color:#f92672">*</span>page <span style="color:#f92672">=</span> heap_next_freepage(objspace, heap_eden);
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">struct</span> heap_page <span style="color:#f92672">*</span>page <span style="color:#f92672">=</span> <span style="color:#a6e22e">heap_next_freepage</span>(objspace, heap_eden);
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>   cr<span style="color:#f92672">-&gt;</span>newobj_cache.using_page <span style="color:#f92672">=</span> page;
 </span></span><span style="display:flex;"><span>   cr<span style="color:#f92672">-&gt;</span>newobj_cache.freelist <span style="color:#f92672">=</span> page<span style="color:#f92672">-&gt;</span>freelist;
@@ -297,22 +297,22 @@
 </span></span><span style="display:flex;"><span>   page<span style="color:#f92672">-&gt;</span>freelist <span style="color:#f92672">=</span> NULL;
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>The actual caching isn&rsquo;t that interesting, it&rsquo;s just modifying some pointers in a linked list, but <code>heap_next_freepage</code> looks important. This function returns the next page on the heap that contains free slots, and when there are no free pages left - then we start GC to reclaim space. We can see the actual call to <code>gc_start</code> here, buried inside the test expression for the last conditional in <code>heap_prepare</code> in <code>gc.c</code></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>heap_prepare(rb_objspace_t <span style="color:#f92672">*</span>objspace, rb_heap_t <span style="color:#f92672">*</span>heap)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">heap_prepare</span>(<span style="color:#66d9ef">rb_objspace_t</span> <span style="color:#f92672">*</span>objspace, <span style="color:#66d9ef">rb_heap_t</span> <span style="color:#f92672">*</span>heap)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>    GC_ASSERT(heap<span style="color:#f92672">-&gt;</span>free_pages <span style="color:#f92672">==</span> NULL);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">GC_ASSERT</span>(heap<span style="color:#f92672">-&gt;</span>free_pages <span style="color:#f92672">==</span> NULL);
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// spoiler alert
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (is_lazy_sweeping(heap)) {
-</span></span><span style="display:flex;"><span>	    gc_sweep_continue(objspace, heap);
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">is_lazy_sweeping</span>(heap)) {
+</span></span><span style="display:flex;"><span>	    <span style="color:#a6e22e">gc_sweep_continue</span>(objspace, heap);
 </span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (is_incremental_marking(objspace)) {
-</span></span><span style="display:flex;"><span>    	gc_marks_continue(objspace, heap);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">is_incremental_marking</span>(objspace)) {
+</span></span><span style="display:flex;"><span>    	<span style="color:#a6e22e">gc_marks_continue</span>(objspace, heap);
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (heap<span style="color:#f92672">-&gt;</span>free_pages <span style="color:#f92672">==</span> NULL <span style="color:#f92672">&amp;&amp;</span>
-</span></span><span style="display:flex;"><span>        (will_be_incremental_marking(objspace) <span style="color:#f92672">||</span> heap_increment(objspace, heap) <span style="color:#f92672">==</span> FALSE) <span style="color:#f92672">&amp;&amp;</span>
-</span></span><span style="display:flex;"><span>        gc_start(objspace, GPR_FLAG_NEWOBJ) <span style="color:#f92672">==</span> FALSE) {
-</span></span><span style="display:flex;"><span>        rb_memerror();
+</span></span><span style="display:flex;"><span>        (<span style="color:#a6e22e">will_be_incremental_marking</span>(objspace) <span style="color:#f92672">||</span> <span style="color:#a6e22e">heap_increment</span>(objspace, heap) <span style="color:#f92672">==</span> FALSE) <span style="color:#f92672">&amp;&amp;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">gc_start</span>(objspace, GPR_FLAG_NEWOBJ) <span style="color:#f92672">==</span> FALSE) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">rb_memerror</span>();
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p><em>Side rant: There&rsquo;s a pattern here I see a lot in the MRI codebase and I don&rsquo;t like it. the actual important work is being done in a really long and complext test expression of an if statement, and the body of the conditional just raises an error. I feels like it&rsquo;s obfuscating the most important part of the function, which is that we should start GC when there are no free pages. C developers: <a href="https://twitter.com/eightbitraptor">tell me why I&rsquo;m wrong!</a></em></p>
@@ -383,84 +383,84 @@
 <p><code>gc_marks</code> splits the mark phase into two. <code>gc_marks_start</code> and <code>gc_marks_rest</code>. This split is an artifact of incremental marking which we&rsquo;ll talk about in a future post, but for now all we need to know is that <code>gc_marks_start</code> is where the roots are marked and added to the mark stack and <code>gc_marks_rest</code> is what processes the mark list, popping objects off and marking their children.</p>
 <h4 id="marking-the-roots">Marking the roots<a href="#marking-the-roots" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h4>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">gc_mark_roots</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>categoryp)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">gc_mark_roots</span>(<span style="color:#66d9ef">rb_objspace_t</span> <span style="color:#f92672">*</span>objspace, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>categoryp)
 </span></span><span style="display:flex;"><span>{
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> gc_list <span style="color:#f92672">*</span>list;
-</span></span><span style="display:flex;"><span>    rb_execution_context_t <span style="color:#f92672">*</span>ec <span style="color:#f92672">=</span> GET_EC();
-</span></span><span style="display:flex;"><span>    rb_vm_t <span style="color:#f92672">*</span>vm <span style="color:#f92672">=</span> rb_ec_vm_ptr(ec);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">rb_execution_context_t</span> <span style="color:#f92672">*</span>ec <span style="color:#f92672">=</span> <span style="color:#a6e22e">GET_EC</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">rb_vm_t</span> <span style="color:#f92672">*</span>vm <span style="color:#f92672">=</span> <span style="color:#a6e22e">rb_ec_vm_ptr</span>(ec);
 </span></span><span style="display:flex;"><span>    objspace<span style="color:#f92672">-&gt;</span>rgengc.parent_object <span style="color:#f92672">=</span> Qfalse;
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    rb_vm_mark(vm);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">rb_vm_mark</span>(vm);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (vm<span style="color:#f92672">-&gt;</span>self) 
-</span></span><span style="display:flex;"><span>        gc_mark(objspace, vm<span style="color:#f92672">-&gt;</span>self);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">gc_mark</span>(objspace, vm<span style="color:#f92672">-&gt;</span>self);
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    mark_finalizer_tbl(objspace, finalizer_table);
-</span></span><span style="display:flex;"><span>    mark_current_machine_context(objspace, ec);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">mark_finalizer_tbl</span>(objspace, finalizer_table);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">mark_current_machine_context</span>(objspace, ec);
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (list <span style="color:#f92672">=</span> global_list; list; list <span style="color:#f92672">=</span> list<span style="color:#f92672">-&gt;</span>next) {
-</span></span><span style="display:flex;"><span>        gc_mark_maybe(objspace, <span style="color:#f92672">*</span>list<span style="color:#f92672">-&gt;</span>varptr);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">gc_mark_maybe</span>(objspace, <span style="color:#f92672">*</span>list<span style="color:#f92672">-&gt;</span>varptr);
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    rb_mark_end_proc();
-</span></span><span style="display:flex;"><span>    rb_gc_mark_global_tbl();
-</span></span><span style="display:flex;"><span>    rb_gc_mark(objspace<span style="color:#f92672">-&gt;</span>next_object_id);
-</span></span><span style="display:flex;"><span>    mark_tbl_no_pin(objspace, objspace<span style="color:#f92672">-&gt;</span>obj_to_id_tbl);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">rb_mark_end_proc</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">rb_gc_mark_global_tbl</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">rb_gc_mark</span>(objspace<span style="color:#f92672">-&gt;</span>next_object_id);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">mark_tbl_no_pin</span>(objspace, objspace<span style="color:#f92672">-&gt;</span>obj_to_id_tbl);
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (stress_to_class)
-</span></span><span style="display:flex;"><span>        rb_gc_mark(stress_to_class);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">rb_gc_mark</span>(stress_to_class);
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Above is an abridged version of the <code>gc_mark_roots</code> function. I&rsquo;ve removed all the debug and logging related code, to expose the actual marking code more clearly. From this we can identify exactly what Ruby considers Root objects.</p>
 <p>We can see that the root object set contains the Ruby virtual machine itself, as well as any reference directly attached to the VM, this includes all the individual Ractors, the Ruby load path, as well as all the global call cache tables and their contents.</p>
 <p>The global variable table itself, and the list of globals are also considered roots, as well as the finalizer table (finalizers are blocks of code, attached to an object, that are run when that object is garbage collected), and the current VM context object.</p>
 <p>There are a bunch of interesting functions here: <code>gc_mark</code>, <code>gc_mark_maybe</code>, <code>mark_tbl_no_pin</code> that all deal with actually marking various types of objects, in various states. All of them, when you follow the path down, eventually lead to <code>gc_mark_ptr</code> which is where the core marking logic really starts.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">gc_mark_ptr</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace, VALUE obj)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">gc_mark_ptr</span>(<span style="color:#66d9ef">rb_objspace_t</span> <span style="color:#f92672">*</span>objspace, VALUE obj)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (LIKELY(during_gc)) {
-</span></span><span style="display:flex;"><span>	    rgengc_check_relation(objspace, obj);
-</span></span><span style="display:flex;"><span>	    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>gc_mark_set(objspace, obj)) <span style="color:#66d9ef">return</span>; <span style="color:#75715e">/* already marked */</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">LIKELY</span>(during_gc)) {
+</span></span><span style="display:flex;"><span>	    <span style="color:#a6e22e">rgengc_check_relation</span>(objspace, obj);
+</span></span><span style="display:flex;"><span>	    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">gc_mark_set</span>(objspace, obj)) <span style="color:#66d9ef">return</span>; <span style="color:#75715e">/* already marked */</span>
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (UNLIKELY(RB_TYPE_P(obj, T_NONE))) {
-</span></span><span style="display:flex;"><span>          rp(obj);
-</span></span><span style="display:flex;"><span>          rb_bug(<span style="color:#e6db74">&#34;try to mark T_NONE object&#34;</span>); <span style="color:#75715e">/* check here will help debugging */</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">UNLIKELY</span>(<span style="color:#a6e22e">RB_TYPE_P</span>(obj, T_NONE))) {
+</span></span><span style="display:flex;"><span>          <span style="color:#a6e22e">rp</span>(obj);
+</span></span><span style="display:flex;"><span>          <span style="color:#a6e22e">rb_bug</span>(<span style="color:#e6db74">&#34;try to mark T_NONE object&#34;</span>); <span style="color:#75715e">/* check here will help debugging */</span>
 </span></span><span style="display:flex;"><span>      }
-</span></span><span style="display:flex;"><span>	    gc_aging(objspace, obj);
-</span></span><span style="display:flex;"><span>	    gc_grey(objspace, obj);
+</span></span><span style="display:flex;"><span>	    <span style="color:#a6e22e">gc_aging</span>(objspace, obj);
+</span></span><span style="display:flex;"><span>	    <span style="color:#a6e22e">gc_grey</span>(objspace, obj);
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span> {
-</span></span><span style="display:flex;"><span>        reachable_objects_from_callback(obj);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">reachable_objects_from_callback</span>(obj);
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>We&rsquo;ll talk more about checking relations and <code>gc_aging</code> in a later post when we talk about the generational garbage collector.</p>
 <p>There are 2 interesting parts to this function. the first is the slightly misleading line here:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>gc_mark_set(objspace, obj)) <span style="color:#66d9ef">return</span> <span style="color:#75715e">/* already marked */</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">gc_mark_set</span>(objspace, obj)) <span style="color:#66d9ef">return</span> <span style="color:#75715e">/* already marked */</span>
 </span></span></code></pre></div><p>See my earlier side note about burying side effect laden code inside conditional tests - This line is what actually does the marking.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">int</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">gc_mark_set</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace, VALUE obj)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">gc_mark_set</span>(<span style="color:#66d9ef">rb_objspace_t</span> <span style="color:#f92672">*</span>objspace, VALUE obj)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>    ASSERT_vm_locking();
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (RVALUE_MARKED(obj)) <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    MARK_IN_BITMAP(GET_HEAP_MARK_BITS(obj), obj);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">ASSERT_vm_locking</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">RVALUE_MARKED</span>(obj)) <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">MARK_IN_BITMAP</span>(<span style="color:#a6e22e">GET_HEAP_MARK_BITS</span>(obj), obj);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Here we can see we first make sure that the VM is locked, ie. we&rsquo;ve stopped the world so that nothing happens to our heap while we&rsquo;re collecting. Then if the object is already marked we return false, otherwise we actually mark the object and return true.</p>
 <p>Objects are marked not by setting a flag on the object itself, but by marking them in a seperate table. In Ruby&rsquo;s case, each heap page has a data structure called the <code>mark_bits</code> that is an array of bits, with each bit corresponding to a slot in the heap.</p>
 <p>The slot is marked if its mark bit is <code>1</code> and not if its mark bit is <code>0</code>. In the GC Handbook, this is known as bitmap marking. It has a few benefits: It doesn&rsquo;t mutate objects in the heap during GC. It also allows the marking information to be stored densely. This can have speed gains when sweeping as we can keep more marking information in a single CPU cache line.</p>
 <p>Moving back to <code>gc_mark_ptr</code>, once we get past the sanity checking code we can see the call to <code>gc_grey</code>! This is the part of the process where we start to recognise terminology from what we know so far about mark &amp; sweep!</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>gc_grey(rb_objspace_t <span style="color:#f92672">*</span>objspace, VALUE obj)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">gc_grey</span>(<span style="color:#66d9ef">rb_objspace_t</span> <span style="color:#f92672">*</span>objspace, VALUE obj)
 </span></span><span style="display:flex;"><span>{
 </span></span><span style="display:flex;"><span><span style="color:#75715e">#if RGENGC_CHECK_MODE
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (RVALUE_MARKED(obj) <span style="color:#f92672">==</span> FALSE) rb_bug(<span style="color:#e6db74">&#34;gc_grey: %s is not marked.&#34;</span>, obj_info(obj));
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (RVALUE_MARKING(obj) <span style="color:#f92672">==</span> TRUE) rb_bug(<span style="color:#e6db74">&#34;gc_grey: %s is marking/remembered.&#34;</span>, obj_info(obj));
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">RVALUE_MARKED</span>(obj) <span style="color:#f92672">==</span> FALSE) <span style="color:#a6e22e">rb_bug</span>(<span style="color:#e6db74">&#34;gc_grey: %s is not marked.&#34;</span>, <span style="color:#a6e22e">obj_info</span>(obj));
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">RVALUE_MARKING</span>(obj) <span style="color:#f92672">==</span> TRUE) <span style="color:#a6e22e">rb_bug</span>(<span style="color:#e6db74">&#34;gc_grey: %s is marking/remembered.&#34;</span>, <span style="color:#a6e22e">obj_info</span>(obj));
 </span></span><span style="display:flex;"><span><span style="color:#75715e">#endif
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">#if GC_ENABLE_INCREMENTAL_MARK
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (is_incremental_marking(objspace)) {
-</span></span><span style="display:flex;"><span>	    MARK_IN_BITMAP(GET_HEAP_MARKING_BITS(obj), obj);
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">is_incremental_marking</span>(objspace)) {
+</span></span><span style="display:flex;"><span>	    <span style="color:#a6e22e">MARK_IN_BITMAP</span>(<span style="color:#a6e22e">GET_HEAP_MARKING_BITS</span>(obj), obj);
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span><span style="color:#75715e">#endif
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>    push_mark_stack(<span style="color:#f92672">&amp;</span>objspace<span style="color:#f92672">-&gt;</span>mark_stack, obj);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">push_mark_stack</span>(<span style="color:#f92672">&amp;</span>objspace<span style="color:#f92672">-&gt;</span>mark_stack, obj);
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>The first thing we see here (aside from the sanity check logic) is that we&rsquo;re marking in a bitmap, but only if incremental marking is enabled.</p>
 <p>This looks relevant to us, but is actually a red herring! We&rsquo;ve already marked our object in the <code>mark_bits</code> in the previous step - these <code>marking_bits</code> are used for something else.</p>
@@ -470,59 +470,59 @@
 <h3 id="marking-the-rest-of-the-heap">Marking the rest of the heap<a href="#marking-the-rest-of-the-heap" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>We said earlier that the mark phase was shared between two functions. Here&rsquo;s the second: <code>gc_marks_rest</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">gc_marks_rest</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">gc_marks_rest</span>(<span style="color:#66d9ef">rb_objspace_t</span> <span style="color:#f92672">*</span>objspace)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>    gc_report(<span style="color:#ae81ff">1</span>, objspace, <span style="color:#e6db74">&#34;gc_marks_rest</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">gc_report</span>(<span style="color:#ae81ff">1</span>, objspace, <span style="color:#e6db74">&#34;gc_marks_rest</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">#if GC_ENABLE_INCREMENTAL_MARK
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    heap_eden<span style="color:#f92672">-&gt;</span>pooled_pages <span style="color:#f92672">=</span> NULL;
 </span></span><span style="display:flex;"><span><span style="color:#75715e">#endif
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (is_incremental_marking(objspace)) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">is_incremental_marking</span>(objspace)) {
 </span></span><span style="display:flex;"><span>	    <span style="color:#66d9ef">do</span> {
-</span></span><span style="display:flex;"><span>	        <span style="color:#66d9ef">while</span> (gc_mark_stacked_objects_incremental(objspace, INT_MAX) <span style="color:#f92672">==</span> FALSE);
-</span></span><span style="display:flex;"><span>	    } <span style="color:#66d9ef">while</span> (gc_marks_finish(objspace) <span style="color:#f92672">==</span> FALSE);
+</span></span><span style="display:flex;"><span>	        <span style="color:#66d9ef">while</span> (<span style="color:#a6e22e">gc_mark_stacked_objects_incremental</span>(objspace, INT_MAX) <span style="color:#f92672">==</span> FALSE);
+</span></span><span style="display:flex;"><span>	    } <span style="color:#66d9ef">while</span> (<span style="color:#a6e22e">gc_marks_finish</span>(objspace) <span style="color:#f92672">==</span> FALSE);
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span> {
-</span></span><span style="display:flex;"><span>	    gc_mark_stacked_objects_all(objspace);
-</span></span><span style="display:flex;"><span>	    gc_marks_finish(objspace);
+</span></span><span style="display:flex;"><span>	    <span style="color:#a6e22e">gc_mark_stacked_objects_all</span>(objspace);
+</span></span><span style="display:flex;"><span>	    <span style="color:#a6e22e">gc_marks_finish</span>(objspace);
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">/* move to sweep */</span>
-</span></span><span style="display:flex;"><span>    gc_sweep(objspace);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">gc_sweep</span>(objspace);
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Ignoring the code paths that relate to incremental marking until another post. This code calls <code>gc_mark_stacked_objects_all</code>, and then the slightly ambiguously named <code>gc_marks_finish</code>, and finally moves us on to the sweeping stage with <code>gc_sweep</code>.</p>
 <p>Let&rsquo;s take a look at how the stacked objects are marked because this is where the core of our algorithm that walks the reachable objects lives.</p>
 <p><code>gc_mark_stacked_objects_all</code> eventually leads us to <code>gc_mark_stacked_objects</code> and specifically, these lines of code:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> (pop_mark_stack(mstack, <span style="color:#f92672">&amp;</span>obj)) {
-</span></span><span style="display:flex;"><span>        gc_mark_children(objspace, obj);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> (<span style="color:#a6e22e">pop_mark_stack</span>(mstack, <span style="color:#f92672">&amp;</span>obj)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">gc_mark_children</span>(objspace, obj);
 </span></span><span style="display:flex;"><span>    }
 </span></span></code></pre></div><p>Hopefully it&rsquo;s clear that this function pops an object (<code>obj</code>) off the mark stack (<code>mstack</code>), calls <code>gc_mark_children</code> on the object and then repeats until the mark stack is empty. Just like our psuedo-implementation earlier in this article! The function <code>gc_mark_children</code> is massive so we&rsquo;re going to walk through the important parts, rather than look at the whole function at once.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">gc_mark_children</span>(rb_objspace_t <span style="color:#f92672">*</span>objspace, VALUE obj)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">gc_mark_children</span>(<span style="color:#66d9ef">rb_objspace_t</span> <span style="color:#f92672">*</span>objspace, VALUE obj)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">register</span> RVALUE <span style="color:#f92672">*</span>any <span style="color:#f92672">=</span> RANY(obj);
-</span></span><span style="display:flex;"><span>    gc_mark_set_parent(objspace, obj);
-</span></span><span style="display:flex;"><span>    gc_mark(objspace, any<span style="color:#f92672">-&gt;</span>as.basic.klass);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">register</span> RVALUE <span style="color:#f92672">*</span>any <span style="color:#f92672">=</span> <span style="color:#a6e22e">RANY</span>(obj);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">gc_mark_set_parent</span>(objspace, obj);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">gc_mark</span>(objspace, any<span style="color:#f92672">-&gt;</span>as.basic.klass);
 </span></span></code></pre></div><p>I&rsquo;ve cut out some special case code for unexpected objects and Ruby internals here, but this is the bulk of the work of this part of the function. We flag that the object we&rsquo;re looking at is our parent object, and then make sure it&rsquo;s marked.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#66d9ef">switch</span> (BUILTIN_TYPE(obj)) {
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#66d9ef">switch</span> (<span style="color:#a6e22e">BUILTIN_TYPE</span>(obj)) {
 </span></span></code></pre></div><p>The rest of this function is the body of this switch statement. We have different marking behaviour depending on what the type of the <code>RVALUE</code> in the slot is, because each object type is arranged differently in memory and has differing fields and references to other data in the heap. Taking a Ruby Array as an example (represented by the type <code>T_ARRAY</code>):</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">case</span> T_ARRAY:
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (FL_TEST(obj, ELTS_SHARED)) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">FL_TEST</span>(obj, ELTS_SHARED)) {
 </span></span><span style="display:flex;"><span>        VALUE root <span style="color:#f92672">=</span> any<span style="color:#f92672">-&gt;</span>as.array.as.heap.aux.shared_root;
-</span></span><span style="display:flex;"><span>        gc_mark(objspace, root);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">gc_mark</span>(objspace, root);
 </span></span><span style="display:flex;"><span>	  }
 </span></span><span style="display:flex;"><span>	  <span style="color:#66d9ef">else</span> {
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">long</span> i, len <span style="color:#f92672">=</span> RARRAY_LEN(obj);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">const</span> VALUE <span style="color:#f92672">*</span>ptr <span style="color:#f92672">=</span> RARRAY_CONST_PTR_TRANSIENT(obj);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">long</span> i, len <span style="color:#f92672">=</span> <span style="color:#a6e22e">RARRAY_LEN</span>(obj);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">const</span> VALUE <span style="color:#f92672">*</span>ptr <span style="color:#f92672">=</span> <span style="color:#a6e22e">RARRAY_CONST_PTR_TRANSIENT</span>(obj);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (i<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> len; i<span style="color:#f92672">++</span>) {
-</span></span><span style="display:flex;"><span>          gc_mark(objspace, ptr[i]);
+</span></span><span style="display:flex;"><span>          <span style="color:#a6e22e">gc_mark</span>(objspace, ptr[i]);
 </span></span><span style="display:flex;"><span>	    }
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (LIKELY(during_gc)) {
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>FL_TEST_RAW(obj, RARRAY_EMBED_FLAG) <span style="color:#f92672">&amp;&amp;</span>
-</span></span><span style="display:flex;"><span>                    RARRAY_TRANSIENT_P(obj)) {
-</span></span><span style="display:flex;"><span>                    rb_transient_heap_mark(obj, ptr);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">LIKELY</span>(during_gc)) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">FL_TEST_RAW</span>(obj, RARRAY_EMBED_FLAG) <span style="color:#f92672">&amp;&amp;</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">RARRAY_TRANSIENT_P</span>(obj)) {
+</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">rb_transient_heap_mark</span>(obj, ptr);
 </span></span><span style="display:flex;"><span>                }
 </span></span><span style="display:flex;"><span>            }
 </span></span><span style="display:flex;"><span>        }
