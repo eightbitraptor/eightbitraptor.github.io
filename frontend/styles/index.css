@@ -1,0 +1,318 @@
+@import url("lists.css");
+
+:root {
+  --body-background: white;
+  --body-color: black;
+  --heading-color: #000055;
+  --action-color: #000055;
+  --subtle-color: #afceee;
+}
+
+body {
+  background: var(--body-background);
+  color: var(--body-color);
+  font-family: BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    "Helvetica", "Arial", sans-serif;
+  margin: 0 8px;
+  line-height: 1.5;
+  font-size: 1.3rem;
+}
+
+a {
+  color: var(--action-color);
+  text-decoration: underline;
+  text-decoration-color: #ffb088;
+}
+
+h1 {
+  margin: 1rem 0 3rem;
+  text-align: center;
+  font-size: 2em;
+  font-weight: 550;
+  color: var(--heading-color);
+  line-height: 1.2;
+  font-style: italic;
+}
+
+h2 {
+  font-size: 1.25em;
+}
+
+body > header {
+  margin: 1rem;
+  text-align: center;
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+nav .home {
+  font-weight: bold;
+  padding: 2rem 0;
+}
+
+body > nav ul,
+body > main > header ul{
+  margin: 2rem 0;
+  padding: 0;
+  list-style-type: none;
+  display: flex;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+
+@media (max-width: 500px) {
+  body > nav ul {
+    flex-direction: column;
+  }
+}
+
+body > nav > ul > li:last-child::after,
+body > main > header ul > li:last-child::after {
+  display: none;
+}
+
+body > nav > ul > li {
+  padding: 0;
+  margin: 0;
+
+  @media (max-width: 500px) {
+    margin-left: auto;
+  }
+}
+
+@media (min-width: 500px) {
+  nav .home::after,
+  body > nav > ul > li::after,
+  body > main > header ul > li:after {
+    font-weight: bold;
+    content: "•";
+    padding-left: 1em;
+    padding-right: 1em;
+    font-weight: normal;
+  }
+}
+
+body > nav a {
+  text-decoration: none;
+}
+
+main {
+  margin: 2rem auto 4rem;
+  max-width: 65rem;
+  min-height: calc(100vh - 200px);
+  padding: 25px 25px 50px;
+
+  @media (max-width: 500px) {
+    padding: 16px 16px 50px;
+  }
+}
+
+.index section {
+  border-bottom: 1px var(--action-color) dotted;
+  padding-bottom: 2rem;
+  margin-bottom: 2rem;
+}
+
+.index main .socials {
+  display: flex;
+  border-bottom: 1px var(--action-color) dotted;
+  padding-bottom: 2rem;
+  margin-bottom: 2rem;
+}
+
+.socials ul {
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+  display: flex;
+  flex: 3;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.socials li {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  @media (min-width: 500px) {
+    padding-left: 2rem;
+  }
+}
+
+.socials li svg {
+  height: 3rem;
+  width: 3rem;
+}
+
+.socials li svg > image {
+  height: inherit;
+}
+
+.socials .logo {
+  flex: 1;
+}
+
+.socials .logo img{
+  border-radius: 50%;
+  border: 2px solid var(--action-color);
+  width: 150px;
+  margin-right: 3rem;
+}
+
+.index main .short-about {
+  display: flex;
+  flex-direction: row-reverse;
+  flex-wrap: wrap;
+  border-bottom: 1px dotted var(--action-color);
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+}
+
+.index main .short-about p:first-of-type {
+  margin-top: 0;
+  padding-top: 6px;
+  padding-right: 1rem;
+  flex: 4;
+}
+
+.index main .mecard {
+  display: flex;
+  width: 208px;
+  flex-direction: column;
+  flex: 1;
+}
+
+.index main .mecard img {
+  align-self: flex-end;
+  margin-left: 3em;
+  width: 208px;
+  height: 208px;
+}
+
+#last-fm-now-playing {
+  display: flex;
+}
+
+#last-fm-now-playing div {
+  flex: 4;
+}
+
+#last-fm-now-playing img {
+  flex: 1;
+}
+
+#last-fm-now-playing .status,
+#last-fm-now-playing .song,
+#last-fm-now-playing .album,
+#last-fm-now-playing .artist {
+  font-weight: 500;
+}
+
+.post header,
+.latest-weeknotes header {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px dotted var(--action-color);
+  padding-bottom: 2rem;
+  margin-bottom: 2rem;
+}
+
+.post header .meta {
+  display: flex;
+}
+
+.post header span {
+  flex: 1;
+}
+
+.post header span:first-child {
+  flex: 4;
+}
+
+.post header ul {
+  flex: 1;
+  margin: 0;
+}
+
+.post main img {
+  max-width: 50rem;
+  margin: 0 auto;
+  border-radius: 6px;
+  border: 2px solid var(--action-color);
+
+  @media(max-width: 800px) {
+    max-width: 80%;
+  }
+}
+
+.post p:has(> img:first-child),
+.post a:has(> img:first-child){
+  display: flex;
+}
+
+.latest-weeknote h2 {
+  font-weight: 500;
+  font-style: italic;
+}
+
+.latest-weeknote {
+  border-bottom: 1px dotted var(--action-color);
+  margin-bottom: 6rem;
+  padding-bottom: 2rem;
+}
+
+.latest-weeknote header {
+  margin-bottom: 3rem;
+}
+
+.latest-weeknote header h2 {
+  margin-bottom: 0;
+}
+
+.weeknote-archive {
+  display: flex;
+  flex-direction: column;
+}
+
+.weeknote-archive section {
+  display: flex;
+  flex-direction: row;
+}
+
+.weeknote-archive h2 {
+  flex: 1;
+  margin: 0 2rem 0 0;
+  padding: 0;
+}
+.weeknote-archive ul {
+  flex: 10;
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  font-size: 1.3rem;
+}
+
+.weeknote-archive li {
+  padding: 0 1.5rem 0 0;
+  margin: 0;
+}
+
+footer {
+    text-align: center;
+    margin-bottom: 4rem;
+    font-size: 1em;
+}
+
+hr {
+  width: 50%;
+  border: none;
+  border-top: 1px dotted var(--subtle-color);
+  margin: 2rem auto;
+}

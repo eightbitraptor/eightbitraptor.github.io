@@ -1,0 +1,47 @@
+---
+layout: default
+---
+<div class="socials">
+  <div class="logo">
+    <div class="logo__overlay"></div>
+    <img src="images/me.jpeg"></img>
+  </div>
+
+  <ul>
+    <li><a href="https://ruby.social/@eightbitraptor" alt="Matt Valentine-House on Mastodon"><svg><image href="/images/mastodon.svg" /></svg></a></li>
+    <li><a href="https://www.github.com/eightbitraptor" alt="Matt Valentine-House on Github"><svg><image href="/images/github.svg" /></svg></a></li>
+    <li><a href="https://www.last.fm/user/theshadowaspect" alt="Matt Valentine-House on Last.fm"><svg><image href="/images/music-player-fill.svg" /></svg></a></li>
+    </li>
+  </ul>
+</div>
+
+<section class="short-about">
+    <span class="mecard">
+      <img src="/images/eightbitraptor-mecard.png" />
+    </span>
+
+    <p>Hi! I'm <a href="https://uk.linkedin.com/in/eightbitraptor">Matt</a>. My username in most places online is <strong>eightbitraptor</strong>
+      I've been writing <a href="https://www.ruby-lang.org">Ruby</a> since 2007,
+      contributing to the language since 2020, and I've been a <a href="https://bugs.ruby-lang.org/users/31800">Ruby core committer</a> since
+      March 2023. <br/><br />Currently I'm at <a href="https://shopify.engineering/">Shopify</a> in
+      the Ruby Infrastructure team working full time on improving <a href="https://www.ruby-lang.org">MRI</a> (Matz' Ruby Interpreter - the reference
+      Ruby implementation, also known as CRuby). Scan the QR code to the right for my contact details in <a href="">MECARD</a> format.</p>
+
+    <p>Besides hacking Ruby, I enjoy Anime & Manga, brewing coffee (and sometimes beer), building keyboards, and Photography.</p>
+
+    <p><ruby>私<rt>わたし</rt></ruby>は<a href="https://mkchatinjapanese.com/about/">みえこ<ruby>先生<rt>せんせい</rt></ruby></a>に<ruby>日本語<rt>にほんご</rt></ruby>が<ruby>習<rt>なら</rt></ruby>います。<ruby>週<rt>しゅ</rt></ruby>に６０<ruby>分<rt>ぴゅ</rt></ruby>のレッスンをします。<ruby>私<rt>わたし</rt></ruby>は２０２２<ruby>年<rt>ねん</rt></ruby>１０<ruby>月<rt>がつ</rt></ruby>に<ruby>日本語<rt></rt></ruby>のレッスンをはじめました。でもまだあまり<ruby>上手<rt>じょうず</rt></ruby>でわありません。</p>
+</section>
+
+<section class="latest-content">
+  <p>Why not read my latest blog post: <a href="<%= absolute_url(collections.posts.resources.first) %>"><%= collections.posts.resources.first.data.title %></a>, or checkout out the <a href="/Weeknotes">latest weeknotes</a></p>
+</section>
+
+<section id="last-fm-now-playing">
+  <div>
+    <p>I <span class="status">am not currently listening</span> to <span class="song">any songs</span> by
+    <span class="artist"><a href="">anyone</a></span> from <span class="album">any album</span>.</p>
+    <p class="song-link" hidden>It's probably a banger! <a href="">You can find out on Last.fm</a>.</p>
+  </div>
+
+  <img class="album-art" src="/images/disc-fill.svg" />
+</section>

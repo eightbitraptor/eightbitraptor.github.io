@@ -1,0 +1,17 @@
+.index-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+.index-list li{
+  margin-bottom: 1.2rem;
+  display: block;
+}
+.index-list li a {
+  font-weight: 700;
+  font-size: 1.8rem;
+  text-decoration: none;
+}
+.index-list li span {
+  display: block;
+}

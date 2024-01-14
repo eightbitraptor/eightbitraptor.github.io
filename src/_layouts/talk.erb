@@ -1,0 +1,16 @@
+---
+layout: default
+---
+
+<header>
+  <h1><%= data.title %></h1>
+  <span class="meta">
+    <span class="published-on">
+      <%= date_to_long_string(data.date) %>, <a href="<%= data.event_url %>"><%= data.event %></a>, <%= data.location %></span>
+  </span>
+    </ul>
+  </span>
+</header>
+
+<%= yield %>
+

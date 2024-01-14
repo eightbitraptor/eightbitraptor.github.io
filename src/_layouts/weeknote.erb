@@ -1,0 +1,36 @@
+---
+layout: default
+---
+<article class="latest-weeknote">
+  <header>
+    <h1>Weeknote <%= data.slug %></h1>
+    <h2><%= data.title %></h2>
+  </header>
+
+  <section>
+    <%= yield %>
+  </section>
+</article>
+
+<div class="weeknote-archive">
+  <h2>Archive</h2>
+  <% yearly_weeknotes = collections.weeknotes.resources.group_by{ _1.data.slug.split('-').first }.compact %>
+  <% yearly_weeknotes.each do |year, notes| %>
+    <section>
+    <h2><%= year %></h2>
+    <ul class="weeknote-list">
+      <% notes.reverse.each do |note| %>
+        <% if note.data.slug == data.slug %>
+          <strong>
+        <% end %>
+        <li>
+          <a href="<%= note.relative_url %>"><%= note.data.slug.split('-').last %></a>
+        </li>
+        <% if note.data.slug == data.slug %>
+          </strong>
+        <% end %>
+      <% end %>
+    </ul>
+    </section>
+  <% end %>
+</div>

@@ -1,0 +1,18 @@
+---
+layout: default
+---
+
+<header>
+  <h1><%= data.title %></h1>
+  <span class="meta">
+    <span class="published-on">
+      Published on: <%= date_to_long_string(data.date) %>
+    </span>
+    <span>In categories:</span><ul><% data.categories.each do %>
+      <li><a href="<%= absolute_url("/categories/#{_1.downcase}") %>"><%= _1.downcase %></a></li>
+    <% end %>
+    </ul>
+  </span>
+</header>
+
+<%= yield %>
