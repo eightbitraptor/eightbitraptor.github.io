@@ -2,7 +2,7 @@
 title: Cake Schematics
 slug: 2024-02
 layout: weeknote
-date: 2024-01-10T13:07:29+00:00
+date: 2024-01-14T13:07:29+00:00
 ---
 
 - Starting to get back into the flow of work again. [I can just about remember
