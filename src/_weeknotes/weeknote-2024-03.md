@@ -1,8 +1,8 @@
 ---
 layout: weeknote
-title:
+title: Comedy of errors
 slug: 2024-03
-date: 2024-01-15T12:34:03+00:00
+date: 2024-01-21T20:28:03+00:00
 ---
 
 - My team and I are continuing to focus on getting the Ruby bootstrap tests
