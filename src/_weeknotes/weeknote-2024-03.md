@@ -28,18 +28,23 @@ date: 2024-01-15T12:34:03+00:00
   searching in the current node (because all variables are bound to the parent
   scope, like in `for` loops).
   
+- This seems to work. But `make btest` is only the first level boss of getting
+  the Ruby interpreter to work. `make test-all` is Dark Souls level. It requires
+  building a full Ruby binary (instead of the minimal core binary required by
+  `btest`). And it also runs >26,000 tests.
+  
 <hr />
 
-- I submitted a response to the CFP for RubyKaigi 2024. I am exceptionally
-  excited for Okinawa in May
+- I submitted a response to the CFP for [RubyKaigi
+  2024](https://rubykaigi.org/2024/). I am exceptionally excited to visit
+  Okinawa in May.
 
-- I've already started a Google Maps list of places I'd like to check out if I'm
-  there.
-  
-- It's mostly bars.
+- I've already started a Google Maps list of places I'd like to check out when
+  I'm there.
 
-- Justin Searls makes a good case why you should try and go to Kaigi if you
-  haven't been before.
+- [Justin Searls makes a good case why you should try and go to Kaigi if you
+  haven't been
+  before](https://justin.searls.co/links/2024-01-07-why-you-should-come-to-rubykaigi-in-2024/).
   
 <hr />
   
@@ -66,9 +71,12 @@ date: 2024-01-15T12:34:03+00:00
 
 - This is exactly where I got to in my original playthrough of the game
   in 1997. I was finishing off side quests before heading to the final
-  confrontation when my memory card corrupted itself and I lost everything. I
-  have been back many times since but never had the staying power for it. I'd
-  like to finally finish it.
+  confrontation when my memory card corrupted itself losing my saves and I quite
+  in frustration. I have restarted FF7 many times since but never had the staying
+  power for it. I'd like to finally finish it with as close to 100% as I can.
+  
+- This is mostly so I can troll nerds with my FF hot takes (6, 8, 9 and 10 are
+  all better than 7).
   
 - Lets hope Nintendo's cloud save is worth it, eh.
 
@@ -79,3 +87,65 @@ date: 2024-01-15T12:34:03+00:00
   Knights of the Round materia) a lot more bearable.
 
 <hr />
+
+- In what feels like a comedy of errors, on Wednesday evening I managed to break
+  my glasses while trying to tighten one of the arms. I lost one screw and had
+  to find a spare, and then realised I'd lost my tiny tweezers. And after all
+  that the arm is sprung so I couldn't get the screw back in anyway.
+  
+- After some swearing I decided I'd put it down and take them to the opticians
+  on Thursday morning. Got on the bus nice and early so as to not take too much
+  of a chunk out of my work day, halfway to Canterbury I realised that in my
+  rush to leave the house I had left my glasses at home.
+
+- I eventually got them fixed up. And the bus ride home was free, as the drivers
+  ticket machine malfunctioned as soon as I walked near it.
+
+<hr />
+  
+- Tuesday evening was my fortnightly in-person RPG evening. A couple of friends
+  from University, whom I re-connected with recently as their son goes to the
+  same school as Phoebe, recently started a new game of Vampire: The Masquerade
+  and invited me to join their existing group. We've been going a few months
+  now, for a 3-4 hour session every two weeks, and it's brilliant fun.
+
+- Our campaign is set in 1995 New York, just after a coup that saw the existing
+  vampire ruling hierarchy overthrown. We're working for the new regime as
+  investigators, looking into Sabbat activity, breaches of the Masquerade, that
+  sort of thing. Currently investigating a new type of meth (with supernatural
+  effects) that's being sold in the city by a fascist, white-supremacist biker
+  gang that are also potentially Lycanthrope controlled. Fun times.
+
+- We're using the revised edition ruleset, published in 1998. Which is good,
+  because it was the most recent version of the ruleset at the time I last
+  played any World of Darkness games back in University. I can still, mostly,
+  remember how it works.
+
+- This session was the most action packed one so far! After being tipped off by
+  an informant we had tracked the gang leader to the Brooklyn Docks, and were
+  investigating, when a booby-trapped transit van exploded and nearly killed one
+  of our party. After a short gunfight my character hot-wired a boat and we
+  could chase the gang members into the river - much bloody fighting and
+  vampiric abilities ensured.
+  
+- I summoned sharks in the Hudson River.
+
+- I also bought my very own set of D10's. Which I think, makes me a real Vampire
+  player now.
+  
+<hr />
+
+- Liz and I went down with the gastro bug that Elliot had last week. So the back
+  half of the week was not amazingly pleasant.
+
+- I went to sleep at 5pm Friday evening, and woke up at 9am Saturday. That
+  seemed to mitigate most of the worst of it.
+  
+<hr />
+
+- Church bells in the village were going all morning on Sunday. Turns out today
+  is St Vincents day. The patron saint of winemakers and also the saint our
+  local church is dedicated too.
+  
+- I am not a religious man, but I kind of like that there's a patron saint of
+  winemakers, and that he's the person our local parish has chosen to honour.
