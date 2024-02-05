@@ -238,8 +238,10 @@ main {
   margin: 0;
 }
 
-.post main img {
+.post main img,
+.latest-weeknote img {
   max-width: 50rem;
+  display: block;
   margin: 0 auto;
   border-radius: 6px;
   border: 2px solid var(--action-color);
@@ -315,4 +317,11 @@ hr {
   border: none;
   border-top: 1px dotted var(--subtle-color);
   margin: 2rem auto;
+}
+
+.latest-weeknote iframe {
+  width: 640px;
+  height: 360px;
+  display: block;
+  margin: 0 auto;
 }
