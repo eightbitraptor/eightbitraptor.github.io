@@ -20,3 +20,5 @@ gem "puma", "< 7"
 # gem "nokolexbor", "~> 0.4"
 
 gem "rqrcode"
+
+gem "bridgetown-feed", "~> 3.1"

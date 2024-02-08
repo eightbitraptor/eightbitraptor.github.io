@@ -44,3 +44,9 @@ collections:
     permalink: "talks/:slug/"
     sort_by: date
     sort_direction: descending
+
+feed:
+  excerpt_only: true
+  collections:
+    weeknotes:
+      path: "/weeknotes.xml"
