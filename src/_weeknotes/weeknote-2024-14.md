@@ -52,6 +52,9 @@ date: 2024-04-13T20:00+01:00
   which was a fascinating place to go, and I thoroughly recommend it if you ever
   find yourself in the area.
   
+  I am planning on hanging it in a convenient location to be prominently
+  displayed during video calls.
+  
 <hr />
   
 - I got around to setting up my old Tacx Flow trainer with Zwift in the garage,
