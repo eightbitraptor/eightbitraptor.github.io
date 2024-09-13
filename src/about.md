@@ -6,7 +6,7 @@ Hi, I'm Matt.
 
 I was born in the early 80's in Margate, a seaside town in the county of Kent in
 the UK. Currently I live in Canterbury; still in Kent, but closer to London;
-with my wife, two kids, and our cat.
+with my wife, three kids, and our cat.
 
 I hold a **BEng (hons) in Computer Systems Engineering** from the University of
 Kent.
