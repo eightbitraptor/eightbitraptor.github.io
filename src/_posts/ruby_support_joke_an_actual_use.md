@@ -94,7 +94,7 @@ things are being triggered from.
 And as we mentioned earlier, It turns out that YARV has a couple of extraneous,
 random instructions that maybe we can used to help debug stuff. They're not quite
 no-ops, as they do push values back onto the stack (And I guess they were
-probably funny once. Maybe[1]).
+probably funny once. Maybe[^1]).
 
 ```
 /* BLT */
@@ -151,9 +151,9 @@ And wonder in the beauty of your work
 0011 leave
 ```
 
-[1]: Look. I enjoy the Hitchhikers guide, and Douglas Adams, as much as the next
-    sci-fi loving, geriatric-millenial, british computer nerd. But can we just
-    accept that the number 42 is just a number. And that these jokes have been
-    [done to
+[^1]: Look. I enjoy the Hitchhikers guide, and Douglas Adams, as much as the
+    next sci-fi loving, geriatric-millenial, british computer nerd. But can we
+    just accept that the number 42 is just a number. And that these jokes have
+    been [done to
     death](https://api.rubyonrails.org/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-forty_two)
     at this point. Please.
