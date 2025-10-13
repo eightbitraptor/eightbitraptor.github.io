@@ -20,7 +20,6 @@
 url: "https://www.eightbitraptor.com"
 
 permalink: ":year/:month/:day/:slug/"
-template_engine: erb
 
 # Other options you might want to investigate:
 #
