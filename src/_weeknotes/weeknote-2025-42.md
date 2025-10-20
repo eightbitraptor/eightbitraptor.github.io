@@ -1,6 +1,6 @@
 ---
 layout: weeknote
-title: 
+title: Le sigh
 slug: 2025-42
 date: 2025-10-20T20:00:00+01:00
 ---
