@@ -20,8 +20,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "yarn"
-      - run: yarn install
+          cache: "npm"
+      - run: npm install
 
       - name: Build
         env:
