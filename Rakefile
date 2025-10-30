@@ -48,11 +48,23 @@ end
 #   end
 # end
 
-desc "Generate a weeknote template for the current week"
-task :new_weeknote do
+desc "Generate a weeknote template for the specified week (or current week if not specified)"
+task :new_weeknote, [:weeknum] do |t, args|
   output_dir = Pathname.new("src/_weeknotes/").realpath
   today = Date.today
-  weeknum =  today.strftime("%-V").rjust(2, "0")
+
+  # Use provided weeknumber or calculate from current date
+  weeknum = if args[:weeknum]
+    week_int = args[:weeknum].to_i
+    if week_int < 1 || week_int > 53
+      puts "Error: Week number must be between 1 and 53"
+      exit 1
+    end
+    args[:weeknum].rjust(2, "0")
+  else
+    today.strftime("%-V").rjust(2, "0")
+  end
+
   year = today.strftime("%G")
 
   filepath = "#{output_dir}/weeknote-#{year}-#{weeknum}.md"
