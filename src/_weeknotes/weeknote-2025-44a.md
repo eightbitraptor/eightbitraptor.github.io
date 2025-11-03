@@ -76,7 +76,7 @@ date: 2025-11-3T20:00:00+00:00
   consider YouTube a full-time job).
   
   But I don't like that you're only allowed access to good offers if you can
-  afford to tie up £100 for at least a few weeks.
+  afford to tie up basically £100 for at least a few weeks.
   
 - This whole phone shopping thing has made me realise just how much I actively
   hate the current place we're in with technology life cycles. 
