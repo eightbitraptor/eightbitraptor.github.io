@@ -84,7 +84,7 @@ date: 2024-03-24T21:12:40+00:00
   So I'm on the hunt for a new bag. I have a few ideas already, but if you are
   reading this and you have [strong opinions about
   bags](https://www.reddit.com/r/backpacks/), and/or [EDC
-  stuff](https://www.eightbitraptor.com/2019/09/25/whats-in-my-bag-coffee-shop-edition/),
+  stuff](/2019/09/25/whats-in-my-bag-coffee-shop-edition/),
   particularly if you're based in the UK or know about UK brands, then [hit me
   up](https://ruby.social/@eightbitraptor) [I'd love to hear your reckons](https://www.threads.net/@eightbitraptor). 
   

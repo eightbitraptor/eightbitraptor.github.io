@@ -3,15 +3,45 @@
   margin: 0;
   padding: 0;
 }
-.index-list li{
-  margin-bottom: 1.2rem;
-  display: block;
+
+.index-list li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px dotted var(--border-color);
+  gap: 1.5rem;
 }
+
+.index-list li:first-child {
+  padding-top: 0;
+}
+
+.index-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
 .index-list li a {
-  font-weight: 700;
-  font-size: 1.8rem;
+  font-weight: 500;
+  font-size: 1.05rem;
   text-decoration: none;
+  color: var(--body-color);
+  flex: 1;
+  line-height: 1.4;
+  transition: color 0.2s ease;
 }
+
+.index-list li a:hover {
+  color: var(--action-color);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 .index-list li span {
-  display: block;
+  flex: 0 0 auto;
+  color: var(--subtle-color);
+  font-size: 0.85rem;
+  opacity: 0.8;
+  white-space: nowrap;
 }

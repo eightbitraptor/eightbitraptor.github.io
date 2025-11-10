@@ -156,7 +156,7 @@ Cherry led me back to the tried and tested MX Browns).
 Anyway. I'm excited to see how this goes. I'm planning to write more about the
 actual hardware and software when the keyboard arrives, so if this is
 interesting to you, there's [an RSS feed
-here](https://www.eightbitraptor.com/index.xml) and thanks for reading.
+here](/index.xml) and thanks for reading.
 
 ## So why didn't you buy a Kinesis Advantage?
 

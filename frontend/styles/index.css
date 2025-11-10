@@ -1,42 +1,71 @@
 @import url("lists.css");
 
 :root {
-  --body-background: white;
-  --body-color: black;
-  --heading-color: #000055;
-  --action-color: #000055;
-  --subtle-color: #afceee;
+  /* TokyoNight Moon Colors - Darker variant */
+  --body-background: #1a1b26;
+  --body-color: #c8d3f5;
+  --heading-color: #82aaff;
+  --action-color: #86e1fc;
+  --subtle-color: #636da6;
+
+  /* Additional TokyoNight Moon Colors */
+  --green: #c3e88d;
+  --magenta: #fca7ea;
+  --orange: #ff966c;
+  --purple: #c099ff;
+  --red: #ff757f;
+  --yellow: #ffc777;
+  --darker-bg: #16161e;
+  --lighter-bg: #1e2030;
+  --selection: #3654a7;
+  --border-color: #2a2b3d;
+
 }
 
 body {
   background: var(--body-background);
   color: var(--body-color);
-  font-family: BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    "Helvetica", "Arial", sans-serif;
-  margin: 0 8px;
-  line-height: 1.5;
-  font-size: 1.3rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Ubuntu", "Cantarell", "Helvetica Neue", sans-serif;
+  margin: 0;
+  padding: 0;
+  padding-top: 50px; /* Account for fixed nav - matches nav height */
+  line-height: 1.6;
+  font-size: 1.125rem;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
 }
 
 a {
   color: var(--action-color);
   text-decoration: underline;
-  text-decoration-color: #ffb088;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--purple);
 }
 
 h1 {
-  margin: 1rem 0 3rem;
-  text-align: center;
-  font-size: 2em;
-  font-weight: 550;
+  margin: 0.5rem 0 2rem;
+  text-align: left;
+  font-size: 2rem;
+  font-weight: 600;
   color: var(--heading-color);
   line-height: 1.2;
-  font-style: italic;
+  letter-spacing: -0.02em;
 }
 
 h2 {
-  font-size: 1.25em;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--heading-color);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
 }
 
 body > header {
@@ -45,17 +74,74 @@ body > header {
 }
 
 nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
   display: flex;
   justify-content: center;
-  font-size: 1.3rem;
-}
-nav .home {
-  font-weight: bold;
-  padding: 2rem 0;
+  font-size: 1rem;
+  height: 50px;
+  background: rgba(26, 27, 38, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color);
 }
 
-body > nav ul,
-body > main > header ul{
+/* Inner nav container to match main content width */
+.nav-inner {
+  width: 100%;
+  max-width: 45rem; /* Match main content width */
+  padding: 0 25px; /* Match main content padding */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 auto;
+}
+
+nav .home {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+nav .home::after {
+  display: none !important; /* Ensure no separator after home link */
+}
+
+nav .home a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--body-color);
+  height: 100%;
+}
+
+nav .home a:hover {
+  color: var(--action-color);
+}
+
+nav .home img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+}
+
+nav ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 1rem;
+}
+
+body > main > header ul {
   margin: 2rem 0;
   padding: 0;
   list-style-type: none;
@@ -65,44 +151,46 @@ body > main > header ul{
 }
 
 @media (max-width: 500px) {
-  body > nav ul {
-    flex-direction: column;
+  nav {
+    font-size: 0.9rem;
+  }
+
+  nav ul {
+    display: none; /* Hide nav links on mobile to save space */
   }
 }
 
-body > nav > ul > li:last-child::after,
+nav ul li {
+  padding: 0;
+  margin: 0;
+}
+
+nav ul li:last-child::after,
 body > main > header ul > li:last-child::after {
   display: none;
 }
 
-body > nav > ul > li {
-  padding: 0;
-  margin: 0;
-
-  @media (max-width: 500px) {
-    margin-left: auto;
-  }
-}
-
 @media (min-width: 500px) {
-  nav .home::after,
-  body > nav > ul > li::after,
-  body > main > header ul > li:after {
-    font-weight: bold;
+  body > main > header ul > li:not(:last-child):after {
     content: "•";
     padding-left: 1em;
     padding-right: 1em;
-    font-weight: normal;
+    opacity: 0.5;
   }
 }
 
-body > nav a {
+nav a {
   text-decoration: none;
+  color: var(--body-color);
+}
+
+nav ul a:hover {
+  color: var(--action-color);
 }
 
 main {
-  margin: 2rem auto 4rem;
-  max-width: 65rem;
+  margin: 1rem auto 4rem;
+  max-width: 45rem; /* 720px - standard readable width */
   min-height: calc(100vh - 200px);
   padding: 25px 25px 50px;
 
@@ -112,16 +200,15 @@ main {
 }
 
 .index section {
-  border-bottom: 1px var(--action-color) dotted;
+  border-bottom: 1px var(--border-color) dotted;
   padding-bottom: 2rem;
   margin-bottom: 2rem;
 }
 
 .index main .socials {
-  display: flex;
-  border-bottom: 1px var(--action-color) dotted;
-  padding-bottom: 2rem;
-  margin-bottom: 2rem;
+  text-align: center;
+  padding-top: 3rem;
+  margin-top: 3rem;
 }
 
 .socials ul {
@@ -129,45 +216,34 @@ main {
   margin: 0;
   list-style-type: none;
   display: flex;
-  flex: 3;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
 }
 
 .socials li {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: center;
-  @media (min-width: 500px) {
-    padding-left: 2rem;
-  }
+  display: inline-block;
 }
 
 .socials li svg {
   height: 3rem;
   width: 3rem;
+  transition: transform 0.2s ease;
+}
+
+.socials li svg:hover {
+  transform: translateY(-2px);
 }
 
 .socials li svg > image {
   height: inherit;
 }
 
-.socials .logo {
-  flex: 1;
-}
-
-.socials .logo img{
-  border-radius: 50%;
-  border: 2px solid var(--action-color);
-  width: 150px;
-  margin-right: 3rem;
-}
-
 .index main .short-about {
   display: flex;
   flex-direction: row-reverse;
   flex-wrap: wrap;
-  border-bottom: 1px dotted var(--action-color);
+  border-bottom: 1px dotted var(--border-color);
   margin-bottom: 2rem;
   padding-bottom: 2rem;
 }
@@ -181,9 +257,9 @@ main {
 
 .index main .mecard {
   display: flex;
-  width: 208px;
   flex-direction: column;
   flex: 1;
+  min-width: 208px;
 }
 
 .index main .mecard img {
@@ -191,6 +267,27 @@ main {
   margin-left: 3em;
   width: 208px;
   height: 208px;
+  flex-shrink: 0;
+  filter: brightness(0.7) contrast(0.9) sepia(0.2) hue-rotate(200deg) saturate(0.7);
+  opacity: 0.85;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+.index main .mecard img:hover {
+  filter: brightness(0.85) contrast(0.95) sepia(0.1) hue-rotate(200deg) saturate(0.8);
+  opacity: 0.95;
+}
+
+@media (max-width: 600px) {
+  .index main .short-about {
+    flex-direction: column;
+  }
+
+  .index main .mecard img {
+    align-self: center;
+    margin-left: 0;
+    margin-top: 2rem;
+  }
 }
 
 #last-fm-now-playing {
@@ -212,30 +309,77 @@ main {
   font-weight: 500;
 }
 
-.post header,
+.post header {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+
+.post header h1 {
+  margin-bottom: 0.5rem;
+}
+
 .latest-weeknotes header {
   display: flex;
   flex-direction: column;
-  border-bottom: 1px dotted var(--action-color);
+  border-bottom: 1px dotted var(--border-color);
   padding-bottom: 2rem;
   margin-bottom: 2rem;
 }
 
 .post header .meta {
   display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.85rem;
+  color: var(--subtle-color);
+  opacity: 0.8;
 }
 
-.post header span {
-  flex: 1;
+.post header .meta * {
+  font-size: inherit;
 }
 
-.post header span:first-child {
-  flex: 4;
+.post header .meta .published-on {
+  flex: 0 0 auto;
 }
 
-.post header ul {
-  flex: 1;
+.post header .meta ul {
   margin: 0;
+  padding: 0;
+  list-style-type: none;
+  display: inline-flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: inherit;
+}
+
+.post header .meta ul li {
+  display: inline;
+  font-size: inherit;
+}
+
+.post header .meta ul li::after {
+  content: "•";
+  margin-left: 0.5rem;
+  opacity: 0.4;
+}
+
+.post header .meta ul li:last-child::after {
+  display: none;
+}
+
+.post header .meta a {
+  color: var(--subtle-color);
+  text-decoration: none;
+  font-size: inherit;
+}
+
+.post header .meta a:hover {
+  color: var(--action-color);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 .post main img,
@@ -243,12 +387,17 @@ main {
   max-width: 50rem;
   display: block;
   margin: 0 auto;
-  border-radius: 6px;
-  border: 2px solid var(--action-color);
+  border: 1px solid var(--border-color);
+  transition: border-color 0.2s ease;
 
   @media(max-width: 800px) {
     max-width: 80%;
   }
+}
+
+.post main img:hover,
+.latest-weeknote img:hover {
+  border-color: var(--action-color);
 }
 
 .post p:has(> img:first-child),
@@ -258,64 +407,124 @@ main {
 
 .latest-weeknote h2 {
   font-weight: 500;
-  font-style: italic;
+  font-style: normal;
+  color: var(--yellow);
 }
 
 .latest-weeknote {
-  border-bottom: 1px dotted var(--action-color);
+  border-bottom: 1px dotted var(--border-color);
   margin-bottom: 6rem;
   padding-bottom: 2rem;
+  margin-top: 0;
+  padding-top: 0;
 }
 
 .latest-weeknote header {
   margin-bottom: 3rem;
+  margin-top: 0;
+  padding-top: 0;
 }
 
 .latest-weeknote header h2 {
+  margin-top: 0;
   margin-bottom: 0;
 }
 
 .weeknote-archive {
   display: flex;
   flex-direction: column;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  opacity: 0.8;
+  align-items: center;
+}
+
+.weeknote-archive header h1 {
+  font-size: 1.2rem;
+  margin: 1rem 0;
+  color: var(--subtle-color);
+  font-weight: 500;
+  text-align: center;
 }
 
 .weeknote-archive section {
   display: flex;
   flex-direction: row;
+  margin-bottom: 1rem;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 25rem;
 }
 
 .weeknote-archive h2 {
-  flex: 1;
-  margin: 0 2rem 0 0;
+  flex: 0 0 auto;
+  margin: 0 1rem 0 0;
   padding: 0;
+  font-size: 0.9rem;
+  color: var(--subtle-color);
+  font-weight: 500;
+  min-width: 3rem;
 }
+
 .weeknote-archive ul {
-  flex: 10;
   margin: 0;
   padding: 0;
   list-style-type: none;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: center;
-  font-size: 1.3rem;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem 0.25rem;
+  font-size: 0.85rem;
+  flex: 1;
 }
 
 .weeknote-archive li {
-  padding: 0 1.5rem 0 0;
+  padding: 0;
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.weeknote-archive li:not(:nth-child(7n))::after {
+  content: "•";
+  position: absolute;
+  right: -0.125rem;
+  opacity: 0.4;
+}
+
+.weeknote-archive li:last-child::after {
+  display: none;
+}
+
+.weeknote-archive a {
+  color: var(--subtle-color);
+  text-decoration: none;
+}
+
+.weeknote-archive a:hover {
+  color: var(--action-color);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.weeknote-archive a.current {
+  color: var(--action-color);
+  font-weight: 600;
 }
 
 footer {
     text-align: center;
     margin-bottom: 4rem;
-    font-size: 1em;
+    font-size: 0.95em;
+    color: var(--subtle-color);
 }
 
 hr {
   width: 50%;
   border: none;
-  border-top: 1px dotted var(--subtle-color);
+  border-top: 1px dotted var(--border-color);
   margin: 2rem auto;
 }
 
@@ -324,4 +533,55 @@ hr {
   height: 360px;
   display: block;
   margin: 0 auto;
+  border: 1px solid var(--border-color);
+}
+
+/* Selection styles */
+::selection {
+  background-color: var(--selection);
+  color: var(--body-color);
+}
+
+::-moz-selection {
+  background-color: var(--selection);
+  color: var(--body-color);
+}
+
+/* Better readability for paragraphs */
+p {
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+
+/* Code inline styles */
+code:not(.highlight code) {
+  background: var(--lighter-bg);
+  color: var(--green);
+  padding: 0.2em 0.4em;
+  font-size: 0.9em;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* Blockquote styling */
+blockquote {
+  border-left: 3px solid var(--purple);
+  padding-left: 1.5rem;
+  margin: 2rem 0;
+  color: var(--subtle-color);
+  font-style: italic;
+}
+
+/* Focus styles - removed for cleaner look */
+*:focus {
+  outline: none;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
 }

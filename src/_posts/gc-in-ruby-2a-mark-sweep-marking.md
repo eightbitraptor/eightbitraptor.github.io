@@ -7,7 +7,7 @@ categories: garbage-collection ruby
 
 ## Introduction
 
-_This is the second part in a series. If you need a refresher of how the Ruby memory model works you can read part 1 [here](https://www.eightbitraptor.com/2021/03/23/gc-in-ruby-part-1-an-overview-of-memory-layout/)_
+_This is the second part in a series. If you need a refresher of how the Ruby memory model works you can read part 1 [here](/2021/03/23/gc-in-ruby-part-1-an-overview-of-memory-layout/)_
 
 I'm assuming that a huge proportion of the folks reading this post are programming with languages that implement automatic dynamic memory management. Ruby, Python, Go, JavaScript, Haskell, Swift, Lisp, Dart, and of course anything based on the .NET CLR or the JVM are all languages that manage memory automatically.
 

@@ -9,7 +9,7 @@ prototype:
 <ul class="index-list">
   <% paginator.resources.each do %>
   <li>
-    <a href="<%= _1.absolute_url %>"><%= _1.data.title %></a>
+    <a href="<%= _1.relative_url %>"><%= _1.data.title %></a>
     <span><%= date_to_long_string(_1.data.date) %></span>
   </li>
   <% end %>

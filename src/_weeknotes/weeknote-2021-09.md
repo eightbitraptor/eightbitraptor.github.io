@@ -22,7 +22,7 @@ date: 2021-03-08T13:36:59Z
   blew my mind and really helped me understand the way normal mode commands are
   structured.
 
-* [A year ago](https://www.eightbitraptor.com/2020/03/11/a-typing-journey-part-2-down-the-rabbit-hole/)
+* [A year ago](/2020/03/11/a-typing-journey-part-2-down-the-rabbit-hole/)
   I wrote a post about keyboards. I mentioned the
   [Corne Keyboard](https://github.com/foostan/crkbd), an awesome little open source 40%
   keyboard from Japan that I had been happily using for some time.

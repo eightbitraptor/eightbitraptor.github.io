@@ -1,19 +1,6 @@
 ---
 layout: default
 ---
-<div class="socials">
-  <div class="logo">
-    <div class="logo__overlay"></div>
-    <img src="images/me.jpeg"></img>
-  </div>
-
-  <ul>
-    <li><a href="https://ruby.social/@eightbitraptor" alt="Matt Valentine-House on Mastodon"><svg><image href="/images/mastodon.svg" /></svg></a></li>
-    <li><a href="https://www.github.com/eightbitraptor" alt="Matt Valentine-House on Github"><svg><image href="/images/github.svg" /></svg></a></li>
-    <li><a href="https://www.last.fm/user/theshadowaspect" alt="Matt Valentine-House on Last.fm"><svg><image href="/images/music-player-fill.svg" /></svg></a></li>
-    </li>
-  </ul>
-</div>
 
 <section class="short-about">
     <span class="mecard">
@@ -33,7 +20,7 @@ layout: default
 </section>
 
 <section class="latest-content">
-  <p>Why not read my latest blog post: <a href="<%= absolute_url(collections.posts.resources.first) %>"><%= collections.posts.resources.first.data.title %></a>, or checkout out the <a href="/weeknotes">latest weeknotes</a></p>
+  <p>Why not read my latest blog post: <a href="<%= collections.posts.resources.first.relative_url %>"><%= collections.posts.resources.first.data.title %></a>, or checkout out the <a href="/weeknotes">latest weeknotes</a></p>
 </section>
 
 <section id="last-fm-now-playing">
@@ -45,3 +32,11 @@ layout: default
 
   <img class="album-art" src="/images/disc-fill.svg" />
 </section>
+
+<div class="socials">
+  <ul>
+    <li><a href="https://ruby.social/@eightbitraptor" alt="Matt Valentine-House on Mastodon"><svg><image href="/images/mastodon.svg" /></svg></a></li>
+    <li><a href="https://www.github.com/eightbitraptor" alt="Matt Valentine-House on Github"><svg><image href="/images/github.svg" /></svg></a></li>
+    <li><a href="https://www.last.fm/user/theshadowaspect" alt="Matt Valentine-House on Last.fm"><svg><image href="/images/music-player-fill.svg" /></svg></a></li>
+  </ul>
+</div>

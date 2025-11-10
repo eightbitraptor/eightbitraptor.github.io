@@ -8,7 +8,7 @@ title: Latest Weeknotes
   <header>
     <h2>
       <span class="meta">Week <%= latest_week.data.slug %>:</span>
-      <a href="<%= absolute_url(latest_week) %>"><%= latest_week.data.title %></a>
+      <a href="<%= latest_week.relative_url %>"><%= latest_week.data.title %></a>
     </h2>
     <div class="publised_on">
       Published on <%= date_to_long_string(latest_week.data.date) %>
@@ -32,7 +32,7 @@ title: Latest Weeknotes
     <ul class="weeknote-list">
       <% notes.each do |note| %>
         <li>
-          <a href="<%= note.relative_url %>"><%= note.data.slug.split('-').last %></a>
+          <a href="<%= note.relative_url %>" <% if note.data.slug == latest_week.data.slug %>class="current"<% end %>><%= note.data.slug.split('-').last %></a>
         </li>
       <% end %>
     </ul>

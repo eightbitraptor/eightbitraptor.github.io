@@ -6,7 +6,7 @@ categories: garbage-collection ruby
 ---
 ## Introduction (and raison d'être)
 
-_Part 2 (a) of this post is now live [here](https://www.eightbitraptor.com/2021/04/15/gc-in-ruby-part-2-a-what-is-gc-mark-sweep-and-how-ruby-marks-objects/), where we move on to discussing our first GC algorithm_
+_Part 2 (a) of this post is now live [here](/2021/04/15/gc-in-ruby-part-2-a-what-is-gc-mark-sweep-and-how-ruby-marks-objects/), where we move on to discussing our first GC algorithm_
 
 My working life is currently spent working on the internals of Matz's Ruby Interpreter([MRI](https://www.ruby-lang.org/en/about/)) as part of the Ruby Infrastructure team at Shopify. 
 

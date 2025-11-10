@@ -13,6 +13,8 @@ date: 2025-11-10T20:00:50+00:00
   but it's definitly just residual now rather than actually part of the
   illness.
 
+<hr />
+
 - Phoebe and Elliots joint part went really well. 42 kids in total, plus
   parents, and I think, everyone had a good time. We hired a science themed
   kids party entertainerr, and watching all their reactions as this guy set his
@@ -28,6 +30,8 @@ date: 2025-11-10T20:00:50+00:00
   left over. Enough for us to have a sneaky bit of cake with lunch for a few
   days, but not enough that I'm going to resent eating it, or worry about it
   affecting my weight!
+
+<hr />
 
 - I took Friday as holiday from work. Mostly for a bit of pressure relief from
   the relentlessness of the week. I've been meaning to explore NixOS for a
@@ -52,6 +56,8 @@ date: 2025-11-10T20:00:50+00:00
   formulate any coherant thoughts about what I think of it yet.
 
   Maybe when I buy a phone I can fill the weeknote void with NixOS crap.
+
+<hr />
 
 - I've been broadly obsessed with two new-to-me bands this week. 國 (Kuni), who
   just released their [first album, Kids

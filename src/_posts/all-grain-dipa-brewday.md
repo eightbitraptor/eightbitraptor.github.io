@@ -5,7 +5,7 @@ date: 2021-04-20T22:14:18+01:00
 categories: beer brewing
 ---
 
-Back in my [retrospective on 2020](https://www.eightbitraptor.com/2021/01/03/2020-a-year-in-review/) I mentioned that I'd picked up brewing beer as a pandemic hobby.
+Back in my [retrospective on 2020](/2021/01/03/2020-a-year-in-review/) I mentioned that I'd picked up brewing beer as a pandemic hobby.
 
 There are three main methods of brewing you see homebrewers in the UK doing. The first uses the beer-in-a-can kits that you can buy in [home hardware stores in the UK](https://www.wilko.com/en-uk/wilko-ipa-brewing-kit-15kg/p/0440627): you get basically concentrated beer extract that you dilute down to the required concentration and ferment. These may or may not have extra hops added into the fermenter depending on the kit.
 
