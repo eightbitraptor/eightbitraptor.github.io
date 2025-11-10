@@ -44,8 +44,9 @@ date: 2025-11-10T20:00:50+00:00
   work on my hardware, reading a lot of manuals and fixing all of the
   clown-shoes code that Claude had generated.
 
-  So now I have a nixOS powered laptop that I can modify and update, that
-  mostly looks and feels like the Arch system it replaced. 
+  So now I have a [nixOS powered
+  laptop](https://github.com/eightbitraptor/nixos-config) that I can modify and
+  update, that mostly looks and feels like the Arch system it replaced. 
 
   Unfortunately, then the boy woke up, so I haven't had chance to actually
   formulate any coherant thoughts about what I think of it yet.
