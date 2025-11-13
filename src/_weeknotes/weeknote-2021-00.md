@@ -2,6 +2,7 @@
 layout: weeknote
 title: "Late to the party"
 slug: 2021-00
+date: 2021-01-05T20:00:50+00:00
 ---
 
 * I am jumping on the weeknotes bandwagon. I'm in good company, and I've been inspired by good people, particularly [Tom](https://tomstu.art/), [Chris](https://blog.chrislowis.co.uk/), and [Paul](https://po-ru.com/).
