@@ -47,5 +47,7 @@ collections:
 feed:
   excerpt_only: true
   collections:
+    posts:
+      path: "/posts.xml"
     weeknotes:
       path: "/weeknotes.xml"

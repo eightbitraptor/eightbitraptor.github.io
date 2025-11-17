@@ -11,4 +11,6 @@
 <script defer src="https://eu.umami.is/script.js" data-website-id="821dce83-8aa0-4d9e-b580-604b9cba536f"></script>
 <%= live_reload_dev_js %>
 
-<%= feed_meta %>
+<link type="application/atom+xml" rel="alternate" href="<%= absolute_url('/feed.xml') %>" title="<%= metadata.title %> - All Posts and Weeknotes" />
+<link type="application/atom+xml" rel="alternate" href="<%= absolute_url('/posts.xml') %>" title="<%= metadata.title %> - Posts Only" />
+<link type="application/atom+xml" rel="alternate" href="<%= absolute_url('/weeknotes.xml') %>" title="<%= metadata.title %> - Weeknotes Only" />

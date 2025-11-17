@@ -1,0 +1,100 @@
+---
+permalink: /feed.xml
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">
+  <generator uri="https://www.bridgetownrb.com/" version="<%= Bridgetown::VERSION %>">Bridgetown</generator>
+  <link href="<%= absolute_url(page.relative_url) %>" rel="self" type="application/atom+xml" />
+  <link href="<%= absolute_url('/') %>" rel="alternate" type="text/html" />
+  <updated><%= site.time.xmlschema %></updated>
+  <id><%= xml_escape(absolute_url(page.relative_url)) %></id>
+
+  <title type="html"><%= xml_escape(strip_html(site.metadata.title)) %></title>
+  <% if site.metadata.description %>
+    <subtitle><%= xml_escape(strip_html(site.metadata.description)) %></subtitle>
+  <% end %>
+
+  <% if site.metadata.author %>
+    <author>
+      <name><%= xml_escape(site.metadata.author.name || site.metadata.author) %></name>
+      <% if site.metadata.author.email %>
+        <email><%= xml_escape(site.metadata.author.email) %></email>
+      <% end %>
+      <% if site.metadata.author.uri %>
+        <uri><%= xml_escape(site.metadata.author.uri) %></uri>
+      <% end %>
+    </author>
+  <% end %>
+
+  <%# Get posts and weeknotes collections %>
+  <% posts_collection = collections.posts %>
+  <% weeknotes_collection = collections.weeknotes %>
+
+  <%# Find all posts (not drafts) %>
+  <% all_posts = posts_collection.resources.reject { |post| post.data.draft } %>
+
+  <%# Find all weeknotes (not drafts) %>
+  <% all_weeknotes = weeknotes_collection.resources.reject { |weeknote| weeknote.data.draft } %>
+
+  <%# Combine posts and weeknotes %>
+  <% all_items = all_posts + all_weeknotes %>
+  <% sorted_items = all_items.sort_by { |item| item.data.date }.reverse %>
+  <% items_limit = 100 %>
+
+  <% sorted_items.first(items_limit).each do |item| %>
+    <% item_id = item.data.id || item.id %>
+    <entry>
+      <title type="html"><%- if item.collection.label == "weeknotes" -%>
+          <%= xml_escape(strip_html("Weeknote #{item.data.slug} - #{item.data.title}")) %>
+        <%- else -%>
+          <%= xml_escape(strip_html(item.data.title)) %>
+        <%- end -%></title>
+      <link href="<%= item.absolute_url || absolute_url(item.relative_url) %>" rel="alternate" type="text/html" title="<%= xml_escape(item.data.title) %>" />
+      <published><%= item.data.date.xmlschema %></published>
+      <updated><%= item.data.date.xmlschema %></updated>
+      <id><%= xml_escape(absolute_url(item_id)) %></id>
+
+      <% item_author = item.data.author || site.metadata.author %>
+      <% if item_author %>
+        <author>
+          <name><%= xml_escape(item_author.respond_to?(:name) ? item_author.name : item_author) %></name>
+          <% if item_author.respond_to?(:email) && item_author.email %>
+            <email><%= xml_escape(item_author.email) %></email>
+          <% end %>
+          <% if item_author.respond_to?(:uri) && item_author.uri %>
+            <uri><%= xml_escape(item_author.uri) %></uri>
+          <% end %>
+        </author>
+      <% end %>
+
+      <% if item.data.categories %>
+        <% item.data.categories.each do |category| %>
+          <category term="<%= xml_escape(category) %>" />
+        <% end %>
+      <% end %>
+
+      <% if item.data.tags %>
+        <% item.data.tags.each do |tag| %>
+          <category term="<%= xml_escape(tag) %>" />
+        <% end %>
+      <% end %>
+
+      <%# Use excerpt if available %>
+      <% if item.data.excerpt %>
+        <summary type="html"><%= xml_escape(truncate(strip_html(item.data.excerpt), 400)) %></summary>
+      <% else %>
+        <summary type="html"><%= xml_escape(truncate(strip_html(item.content), 400)) %></summary>
+      <% end %>
+
+      <%# Include full content unless excerpt_only is set %>
+      <% unless site.config.feed&.excerpt_only %>
+        <content type="html" xml:base="<%= item.absolute_url || absolute_url(item.relative_url) %>"><%= xml_escape(item.content.strip) %></content>
+      <% end %>
+
+      <% if item.data.image && item.data.image["path"] %>
+        <% image_url = absolute_url(item.data.image["path"]) %>
+        <media:content medium="image" url="<%= xml_escape(image_url) %>" />
+      <% end %>
+    </entry>
+  <% end %>
+</feed>
