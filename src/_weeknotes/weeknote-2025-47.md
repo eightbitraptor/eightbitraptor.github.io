@@ -1,6 +1,6 @@
 ---
 layout: weeknote
-title:
+title: I wrote it in Rust
 slug: 2025-47
 date: 2025-11-24T16:29:08+00:00
 ---
