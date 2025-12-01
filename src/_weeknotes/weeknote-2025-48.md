@@ -40,10 +40,10 @@ date: 2025-12-01T20:00:32+00:00
 
 ---
 
-- Went out to Floc with Aaron last week. The beers and pizza were amazing there
-  as they always are. Although in a fit of pique, I got slightly annoyed at all
-  the DDH IPA's on the board and suggested we head out to a couple of different
-  pubs.
+- Went out to Floc with [Arron](https://untappd.com/user/dunmanifestin) last
+  week. The beers and pizza were amazing there as they always are. Although in a
+  fit of pique, I got slightly annoyed at all the DDH IPA's on the board and
+  suggested we head out to a couple of different pubs.
 
   Turns out that was a trap. I don't think the White Hart had cleaned the beer
   lines in a while, and I just didn't enjoy the (usually excellent) beer at the
