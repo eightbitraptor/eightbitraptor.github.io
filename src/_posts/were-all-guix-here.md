@@ -3,7 +3,6 @@ layout: post
 title: We're all Guix here!
 date: 2025-12-10T22:55:00+00:00
 categories: linux, guix, emacs, tooling
-published: false
 ---
 
 [Guix](https://guix.gnu.org/), pronounced "geeks", is a package manager for
