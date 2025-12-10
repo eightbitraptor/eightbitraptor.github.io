@@ -48,6 +48,34 @@ end
 #   end
 # end
 
+desc "Generate a new blog post template"
+task :new_post, [:post_title] do |t, args|
+  output_dir = Pathname.new("src/_posts").realpath
+  post_title = args[:post_title]
+  slug = post_title.downcase
+    .gsub(/[^a-z0-9\s]/, '')
+    .gsub(/\s/, '-')
+
+  filepath = "#{output_dir}/#{slug}.md"
+
+  if Pathname.new(filepath).file?
+    puts "already exists"
+    exit
+  end
+
+  File.open(filepath, File::WRONLY|File::CREAT) do
+    _1.write <<~TEMPLATE_END
+      ---
+      layout: post
+      title: #{post_title}
+      date: #{Time.now.iso8601}
+      categories:
+      published: false
+      ---
+    TEMPLATE_END
+  end
+end
+
 desc "Generate a weeknote template for the specified week (or current week if not specified)"
 task :new_weeknote, [:weeknum] do |t, args|
   output_dir = Pathname.new("src/_weeknotes/").realpath
