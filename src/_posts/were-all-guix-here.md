@@ -201,8 +201,9 @@ over the winter break. Unless I find any huge deal-breakers in the interim. In
 which case I'll likely use NixOS instead.
 
 I also am aware that it's been almost 2 years since my previous non-weeknote
-blog post on this site, and that one was also about config management which is a
-little awkward.
+blog post on this site, and [that one was also about config
+management](https://www.eightbitraptor.com/2024/02/06/managing-dotfiles-with-mitamae/)
+which is a little awkward.
 
 I'll likely write up a progress report shortly on how I got Guix running on my
 laptop. Which was not as trivial as it sounds, unfortunately.
