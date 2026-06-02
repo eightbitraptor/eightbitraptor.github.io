@@ -430,7 +430,7 @@ main {
 
 .post main img,
 .latest-weeknote img {
-  max-width: 50rem;
+  max-width: 40rem;
   display: block;
   margin: 0 auto;
   border: 1px solid var(--border-color);
