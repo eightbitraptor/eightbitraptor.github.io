@@ -26,7 +26,7 @@ title: Latest Weeknotes
   </header>
   <% yearly_weeknotes = collections.weeknotes.resources.group_by{ _1.data.slug.split('-').first }.compact %>
   <% yearly_weeknotes.each do |year, notes| %>
-    <%= next if notes.size == 1 && notes.first.data.slug == latest_week.data.slug %>
+    <% next if notes.size == 1 && notes.first.data.slug == latest_week.data.slug %>
     <section>
     <h2><%= year %>:</h2>
     <ul class="weeknote-list">
