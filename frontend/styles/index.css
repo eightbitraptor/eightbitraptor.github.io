@@ -1,25 +1,26 @@
 @import url("lists.css");
 
 :root {
-  /* TokyoNight Moon Colors - Darker variant */
-  --body-background: #1a1b26;
-  --body-color: #c8d3f5;
-  --heading-color: #82aaff;
-  --action-color: #86e1fc;
-  --subtle-color: #636da6;
+  /* Ramen Shop: sampled from the wallhaven-zyqx1v pixel-art street wallpaper */
+  --body-background: #152b26;
+  --body-color: #d2d0c4;
+  --heading-color: #8fc2b0;
+  --action-color: #d9946f;
+  --subtle-color: #97959d;
 
-  /* Additional TokyoNight Moon Colors */
-  --green: #c3e88d;
-  --magenta: #fca7ea;
-  --orange: #ff966c;
-  --purple: #c099ff;
-  --red: #ff757f;
-  --yellow: #ffc777;
-  --darker-bg: #16161e;
-  --lighter-bg: #1e2030;
-  --selection: #3654a7;
-  --border-color: #2a2b3d;
-
+  --red: #e6886f;
+  --orange: #d9946f;
+  --amber: #d6ae84;
+  --yellow: #cfc39a;
+  --green: #8fc2b0;
+  --leaf: #9cc48f;
+  --teal: #7fb8bb;
+  --blue: #8fa8cc;
+  --comment: #9aa4a2;
+  --lighter-bg: #1b3530;
+  --highlight-bg: #24433e;
+  --selection: #2a4a5e;
+  --border-color: #2f4c4d;
 }
 
 body {
@@ -47,7 +48,7 @@ a {
 }
 
 a:hover {
-  color: var(--purple);
+  color: var(--red);
 }
 
 h1 {
@@ -83,7 +84,7 @@ nav {
   justify-content: flex-start;
   font-size: 1rem;
   height: 50px;
-  background: rgba(26, 27, 38, 0.85);
+  background: rgba(21, 43, 38, 0.85);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -626,7 +627,7 @@ code:not(.highlight code) {
 
 /* Blockquote styling */
 blockquote {
-  border-left: 3px solid var(--purple);
+  border-left: 3px solid var(--teal);
   padding-left: 1.5rem;
   margin: 2rem 0;
   color: var(--subtle-color);
